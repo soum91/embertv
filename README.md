@@ -1,5 +1,7 @@
 # EmberTV
 
+<img src="assets/embertv-flame-tv-icon.png" alt="EmberTV orange flame in a television logo" width="144" />
+
 An Android TV APK catalog and installer with an iOS companion. EmberTV reads public GitHub-hosted JSON catalogs, downloads the **publisher-signed** APK, compares it with any installed package, and asks Android to install it. It never re-signs third-party APKs or uninstalls apps to work around signature conflicts.
 
 ## TV features

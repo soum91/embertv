@@ -19,7 +19,7 @@ def main():
     path = Path("repo.json" if args.platform == "tv" else "source.json")
     with path.open(encoding="utf-8") as f:
         feed = json.load(f)
-    icon_url = "https://raw.githubusercontent.com/soum91/embertv/main/assets/embertv-icon.png"
+    icon_url = "https://raw.githubusercontent.com/soum91/embertv/main/assets/embertv-flame-tv-icon.png"
     feed["iconURL"] = icon_url
     notes = args.notes.read_text(encoding="utf-8").strip() or "Maintenance release"
     item = {
