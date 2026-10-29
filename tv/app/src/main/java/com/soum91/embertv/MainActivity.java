@@ -9,6 +9,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.os.Bundle;
@@ -18,15 +20,22 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.text.Editable;
+import android.text.TextWatcher;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -35,7 +44,10 @@ public final class MainActivity extends Activity {
     static final int ORANGE = Color.rgb(242, 112, 56), MUTED = Color.rgb(165, 170, 184);
     private static MainActivity current;
     private final ExecutorService network = Executors.newSingleThreadExecutor();
+    private final ExecutorService icons = Executors.newFixedThreadPool(4);
+    private final Map<String, Bitmap> iconCache = new ConcurrentHashMap<>();
     private final List<Catalog.App> apps = new ArrayList<>();
+    private final List<String> downloadHistory = new ArrayList<>();
     private LinearLayout body, sidebar;
     private TextView feedback, pageTitle;
     private InstallEngine installer;
@@ -49,7 +61,7 @@ public final class MainActivity extends Activity {
         companion = new CompanionServer(this, installer); companion.start();
         buildShell(); show("Discover"); refresh();
     }
-    @Override public void onDestroy() { if (current == this) current = null; companion.stop(); network.shutdownNow(); super.onDestroy(); }
+    @Override public void onDestroy() { if (current == this) current = null; companion.stop(); network.shutdownNow(); icons.shutdownNow(); super.onDestroy(); }
     static void report(String message) { if (current != null) current.runOnUiThread(() -> current.setFeedback(message)); }
     private int dp(float v) { return (int)(v * getResources().getDisplayMetrics().density + 0.5f); }
     private GradientDrawable rounded(int color, int radius) { GradientDrawable d = new GradientDrawable(); d.setColor(color); d.setCornerRadius(dp(radius)); return d; }
@@ -76,7 +88,7 @@ public final class MainActivity extends Activity {
         main.addView(sidebar, new LinearLayout.LayoutParams(dp(235), -1));
         TextView logo = label("◆  EmberTV", 28, ORANGE, true);
         sidebar.addView(logo, new LinearLayout.LayoutParams(-1, dp(74)));
-        for (String menu : new String[]{"Discover", "Installed", "Sources", "Pair iPhone", "About"}) {
+        for (String menu : new String[]{"Discover", "Installed", "Downloads", "Sources", "Pair iPhone", "About"}) {
             Button b = button(menu, () -> show(menu));
             LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(-1, dp(60)); p.bottomMargin = dp(9); sidebar.addView(b, p);
         }
@@ -88,12 +100,20 @@ public final class MainActivity extends Activity {
         feedback = label("Ready", 14, MUTED, false); feedback.setPadding(dp(7), dp(12), 0, 0);
         content.addView(feedback, new LinearLayout.LayoutParams(-1, dp(48)));
     }
-    private void setFeedback(String msg) { feedback.setText(msg); }
+    private void setFeedback(String msg) {
+        feedback.setText(msg);
+        if (downloadHistory.isEmpty() || !msg.equals(downloadHistory.get(0))) {
+            downloadHistory.add(0, msg);
+            if (downloadHistory.size() > 25) downloadHistory.remove(downloadHistory.size() - 1);
+        }
+        if (page.equals("Downloads")) show("Downloads");
+    }
     private void show(String section) {
         page = section; pageTitle.setText(section); body.removeAllViews();
         switch (section) {
             case "Discover": showApps(); break;
             case "Installed": showInstalled(); break;
+            case "Downloads": showDownloads(); break;
             case "Sources": showSources(); break;
             case "Pair iPhone": showPair(); break;
             default: showAbout(); break;
@@ -108,20 +128,74 @@ public final class MainActivity extends Activity {
     private void showApps() {
         action("↻  Refresh catalogs", this::refresh);
         if (apps.isEmpty()) { paragraph("No APKs in your sources yet. Add a GitHub catalog in Sources, then refresh."); return; }
+        EditText search = new EditText(this);
+        search.setSingleLine(true); search.setTextColor(WHITE); search.setHintTextColor(MUTED);
+        search.setHint("Search installed apps and GitHub sources..."); search.setTextSize(20);
+        search.setPadding(dp(15), dp(11), dp(15), dp(11)); search.setBackground(rounded(PANEL, 12));
+        LinearLayout.LayoutParams searchParams = new LinearLayout.LayoutParams(-1, dp(65)); searchParams.bottomMargin = dp(20);
+        body.addView(search, searchParams);
         GridLayout grid = new GridLayout(this); grid.setColumnCount(3); body.addView(grid);
+        populateGrid(grid, "");
+        search.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int st, int count, int after) { }
+            @Override public void onTextChanged(CharSequence s, int st, int before, int count) { populateGrid(grid, s.toString()); }
+            @Override public void afterTextChanged(Editable e) { }
+        });
+    }
+    private void populateGrid(GridLayout grid, String query) {
+        grid.removeAllViews();
         PackageManager pm = getPackageManager();
         for (Catalog.App app : apps) {
+            if (!app.name.toLowerCase(java.util.Locale.ROOT).contains(query.toLowerCase(java.util.Locale.ROOT)) &&
+                    !app.packageName.toLowerCase(java.util.Locale.ROOT).contains(query.toLowerCase(java.util.Locale.ROOT))) continue;
             String badge = "GET";
             if (!app.packageName.isEmpty()) try {
                 PackageInfo installed = pm.getPackageInfo(app.packageName, 0);
                 badge = app.latest.code > 0 && app.latest.code > installed.getLongVersionCode() ? "UPDATE" : "INSTALLED";
             } catch (PackageManager.NameNotFoundException ignored) { }
-            final String buttonText = app.name + "\n" + app.latest.name + "   •   " + badge;
-            Button card = button(buttonText, () -> details(app));
-            card.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT); card.setMinHeight(dp(125));
-            GridLayout.LayoutParams p = new GridLayout.LayoutParams(); p.width = dp(225); p.height = dp(132);
-            p.setMargins(0, 0, dp(14), dp(14)); grid.addView(card, p);
+            LinearLayout card = new LinearLayout(this); card.setOrientation(LinearLayout.VERTICAL);
+            card.setFocusable(true); card.setClickable(true); card.setBackground(focusBackground());
+            card.setPadding(dp(15), dp(14), dp(14), dp(12)); card.setOnClickListener(v -> details(app));
+            ImageView image = new ImageView(this);
+            image.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            image.setImageDrawable(rounded(ORANGE, 14));
+            card.addView(image, new LinearLayout.LayoutParams(dp(58), dp(58)));
+            if (!app.icon.isEmpty()) loadIcon(app.icon, image);
+            TextView name = label(app.name, 18, WHITE, true); name.setSingleLine(true); name.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            LinearLayout.LayoutParams np = new LinearLayout.LayoutParams(-1, dp(32)); np.topMargin = dp(10); card.addView(name, np);
+            TextView version = label(app.latest.name + "  •  " + badge, 14, MUTED, false);
+            card.addView(version, new LinearLayout.LayoutParams(-1, dp(23)));
+            card.setOnFocusChangeListener((v, focused) -> {
+                name.setTextColor(focused ? Color.BLACK : WHITE);
+                version.setTextColor(focused ? Color.DKGRAY : MUTED);
+                card.setScaleX(focused ? 1.03f : 1f); card.setScaleY(focused ? 1.03f : 1f);
+            });
+            int screenDp = (int)(getResources().getDisplayMetrics().widthPixels / getResources().getDisplayMetrics().density);
+            int cardDp = Math.max(165, Math.min(240, (screenDp - 345) / 3 - 15));
+            GridLayout.LayoutParams p = new GridLayout.LayoutParams(); p.width = dp(cardDp); p.height = dp(166);
+            p.setMargins(0, 0, dp(15), dp(16)); grid.addView(card, p);
         }
+    }
+    private void loadIcon(String url, ImageView view) {
+        Bitmap cached = iconCache.get(url);
+        if (cached != null) { view.setImageBitmap(cached); return; }
+        icons.execute(() -> {
+            if (!url.startsWith("https://")) return;
+            HttpURLConnection conn = null;
+            try {
+                conn = (HttpURLConnection) new URL(url).openConnection();
+                conn.setConnectTimeout(8000); conn.setReadTimeout(8000);
+                if (conn.getResponseCode() != 200 || conn.getContentLengthLong() > 2_000_000L) return;
+                try (InputStream in = conn.getInputStream()) {
+                    Bitmap bmp = BitmapFactory.decodeStream(in);
+                    if (bmp != null) { iconCache.put(url, bmp); runOnUiThread(() -> view.setImageBitmap(bmp)); }
+                }
+            } catch (Exception ignored) { } finally { if (conn != null) conn.disconnect(); }
+        });
+    }
+    private void showDownloads() {
+        paragraph("Recent download and installation status (this session)");
+        for (String event : downloadHistory) paragraph("•  " + event);
     }
     private void details(Catalog.App app) {
         String info = app.summary + "\n\nPackage: " + app.packageName + "\nVersion: " + app.latest.name +
