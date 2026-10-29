@@ -14,6 +14,17 @@
       "category": "utilities",
       "versions": [
         {
+          "version": "0.1.0.6",
+          "buildVersion": "6",
+          "date": "2026-10-29",
+          "localizedDescription": "* fix(release): publish APK with exact EmberTV.apk filename for JSON feed\n* catalog: publish EmberTV 0.1.0.5",
+          "changelog": "* fix(release): publish APK with exact EmberTV.apk filename for JSON feed\n* catalog: publish EmberTV 0.1.0.5",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/tv-v0.1.0.6/EmberTV.apk",
+          "size": 53880,
+          "versionCode": 6,
+          "sha256": "ef7c771fa1adbc30b6276978b010cd0c0d52f8edafa42a6c0ec3759eb101e73a"
+        },
+        {
           "version": "0.1.0.5",
           "buildVersion": "5",
           "date": "2026-10-29",
