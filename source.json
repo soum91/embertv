@@ -4,5 +4,26 @@
   "subtitle": "Control Android TV installs from iPhone",
   "description": "Unsigned iOS companion releases for signing with EmberSign or FlareStore.",
   "sourceURL": "https://raw.githubusercontent.com/soum91/embertv/main/source.json",
-  "apps": []
+  "apps": [
+    {
+      "name": "EmberTV Companion",
+      "bundleIdentifier": "com.soum91.embertv.companion",
+      "developerName": "soum91",
+      "subtitle": "Send GitHub APKs to your Android TV",
+      "localizedDescription": "Browse APK feeds and pair with EmberTV on a local Wi-Fi network.",
+      "category": "utilities",
+      "versions": [
+        {
+          "version": "0.1.0.2",
+          "buildVersion": "2",
+          "date": "2026-10-29",
+          "localizedDescription": "* fix(ci): use hosted Android SDK and correct iOS app bundle name\n* feat: EmberTV catalog installer and native iPhone companion\n* Initial commit",
+          "changelog": "* fix(ci): use hosted Android SDK and correct iOS app bundle name\n* feat: EmberTV catalog installer and native iPhone companion\n* Initial commit",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/companion-v0.1.0.2/EmberTV-Companion.ipa",
+          "size": 130320,
+          "minOSVersion": "16.0"
+        }
+      ]
+    }
+  ]
 }
