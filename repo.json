@@ -14,6 +14,17 @@
       "category": "utilities",
       "versions": [
         {
+          "version": "0.1.0.11",
+          "buildVersion": "11",
+          "date": "2026-10-29",
+          "localizedDescription": "* feat(catalog): consolidate public APK projects and preconfigure Amazon Music TV Plus\n* catalog: publish Companion 0.1.0.7\n* fix(ios): retain launch-screen and local-network plist keys to eliminate letterboxing\n* catalog: publish EmberTV 0.1.0.10",
+          "changelog": "* feat(catalog): consolidate public APK projects and preconfigure Amazon Music TV Plus\n* catalog: publish Companion 0.1.0.7\n* fix(ios): retain launch-screen and local-network plist keys to eliminate letterboxing\n* catalog: publish EmberTV 0.1.0.10",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/tv-v0.1.0.11/EmberTV.apk",
+          "size": 88968,
+          "versionCode": 11,
+          "sha256": "341505504d92f2de154fc2bc55573ebfe11a6148bc38f9ac7744fa3cb1968b2d"
+        },
+        {
           "version": "0.1.0.10",
           "buildVersion": "10",
           "date": "2026-10-29",
