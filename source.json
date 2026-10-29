@@ -14,6 +14,16 @@
       "category": "utilities",
       "versions": [
         {
+          "version": "0.1.0.9",
+          "buildVersion": "9",
+          "date": "2026-10-29",
+          "localizedDescription": "* feat(ios): integrate Drift Wi-Fi and Bluetooth transfers into companion\n* catalog: publish EmberTV 0.1.0.12\n* fix(tv): close APK session write streams before commit\n* catalog: publish EmberTV 0.1.0.11\n* catalog: publish Companion 0.1.0.8",
+          "changelog": "* feat(ios): integrate Drift Wi-Fi and Bluetooth transfers into companion\n* catalog: publish EmberTV 0.1.0.12\n* fix(tv): close APK session write streams before commit\n* catalog: publish EmberTV 0.1.0.11\n* catalog: publish Companion 0.1.0.8",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/companion-v0.1.0.9/EmberTV-Companion.ipa",
+          "size": 363283,
+          "minOSVersion": "16.0"
+        },
+        {
           "version": "0.1.0.8",
           "buildVersion": "8",
           "date": "2026-10-29",
