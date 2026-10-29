@@ -8,7 +8,7 @@ An Android TV APK catalog and installer with an iOS companion. EmberTV reads pub
 
 - Remote-friendly navigation: Discover, Installed, Sources, Pair iPhone, and About.
 - Multiple persistent sources. Paste a direct HTTPS JSON catalog URL or a public GitHub repository URL. GitHub repositories without a JSON feed are browsed through their published `.apk` release assets, with SHA-256 digests when GitHub provides them.
-- Built-in EmberTV JSON catalog and Reynard TV GitHub APK releases; future Reynard releases are detected without manually updating a JSON version.
+- One consolidated EmberTV JSON catalog plus built-in GitHub release discovery for Reynard TV and Amazon Music TV Plus. New APK releases are detected without manually updating JSON versions.
 - Both EmberTV catalogs and AltStore-style `apps[].versions[]` entries with APK `downloadURL` links. iOS-only IPA entries are ignored.
 - Installed version comparisons using Android `versionCode` and public signing certificates. A mismatch stops before installation and does not remove app data.
 - HTTPS download, optional SHA-256 verification, Android PackageInstaller, and explicit TV confirmation.
@@ -38,4 +38,4 @@ iOS: `cd companion && xcodegen generate && xcodebuild -project EmberTVCompanion.
 
 ## Security and limits
 
-EmberTV deliberately does not silently install, bypass Android's unknown-source permission, access private GitHub assets, or replace an app with an incompatible certificate. APK and source URLs must use HTTPS. GitHub's release API requires authentication for private APKs, so private projects such as Amazon Music TV Plus are not published in the public EmberTV feed. Projects without a downloadable APK release, such as WarpTVPort or the current Timbre repository, cannot be installed from their repository alone. Only pair on a private Wi-Fi network; remote install is disabled after EmberTV exits. APK SHA-256 hashes are strongly recommended for catalog publishers. Split `.apks`/`.apkm` archives are not yet supported.
+EmberTV deliberately does not silently install, bypass Android's unknown-source permission, access private GitHub assets, or replace an app with an incompatible certificate. APK and source URLs must use HTTPS. GitHub's release API requires authorization for private APKs; only public APK assets are added to the shared catalog. Projects without a downloadable APK release, such as WarpTVPort or the current Timbre repository, cannot be installed from their repository alone. The Amazon Music TV Plus APK uses the original `com.amazon.mp3` package ID, so Android will reject an in-place update of any installed version signed by a different certificate. Only pair on a private Wi-Fi network; remote install is disabled after EmberTV exits. APK SHA-256 hashes are strongly recommended for catalog publishers. Split `.apks`/`.apkm` archives are not yet supported.

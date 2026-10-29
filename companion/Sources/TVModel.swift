@@ -29,6 +29,12 @@ struct TVApp: Identifiable {
             defaults.set(saved, forKey: "sources")
             defaults.set(true, forKey: "emberTVSeededReynardSource")
         }
+        if !defaults.bool(forKey: "emberTVSeededAmazonSource") {
+            let amazon = "https://github.com/soum91/amazonmusictvplus"
+            if !saved.contains(amazon) { saved.append(amazon) }
+            defaults.set(saved, forKey: "sources")
+            defaults.set(true, forKey: "emberTVSeededAmazonSource")
+        }
         return saved
     }()
     @Published var newSource = ""
@@ -175,6 +181,8 @@ struct TVApp: Identifiable {
             throw TVError.server("GitHub release list unavailable for \(owner)/\(repo) (private repositories require authorization)")
         }
         guard let releases = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { throw TVError.invalidResponse }
+        let reynard = owner == "soum91" && repo == "reynard-browser"
+        let amazon = owner == "soum91" && repo == "amazonmusictvplus"
         var versions: [[String: Any]] = []
         for release in releases where !(release["draft"] as? Bool ?? false) {
             let tag = release["tag_name"] as? String ?? "latest"
@@ -183,21 +191,26 @@ struct TVApp: Identifiable {
                 let filename = asset["name"] as? String ?? ""
                 let downloadURL = asset["browser_download_url"] as? String ?? ""
                 guard filename.lowercased().hasSuffix(".apk"), downloadURL.hasPrefix("https://github.com/") else { continue }
-                let build = githubBuildNumber(filename: filename, tag: tag)
+                let releaseBuild = githubBuildNumber(filename: filename, tag: tag)
+                if amazon && releaseBuild == 0 { continue }
+                let build = amazon ? 526_360_110 + releaseBuild : releaseBuild
                 let versionPattern = #"\d+\.\d+(?:\.\d+)+"#
                 let version = filename.range(of: versionPattern, options: .regularExpression).map { String(filename[$0]) } ?? tag
                 let digest = asset["digest"] as? String ?? ""
-                versions.append(["version": "\(version) (build \(build))", "versionCode": build,
+                versions.append(["version": amazon ? String(tag.dropFirst(tag.hasPrefix("v") ? 1 : 0)) : "\(version) (build \(releaseBuild))", "versionCode": build,
                                  "downloadURL": downloadURL, "sha256": digest.hasPrefix("sha256:") ? String(digest.dropFirst(7)) : "",
                                  "changelog": changelog])
             }
         }
         guard !versions.isEmpty else { throw TVError.server("No public APK release assets in \(owner)/\(repo)") }
-        var app: [String: Any] = ["name": repo == "reynard-browser" ? "Reynard TV" : repo,
+        var app: [String: Any] = ["name": reynard ? "Reynard TV" : amazon ? "Amazon Music TV Plus" : repo,
                                   "subtitle": "GitHub APK releases from \(owner)/\(repo)", "versions": versions]
-        if owner == "soum91" && repo == "reynard-browser" {
+        if reynard {
             app["packageName"] = "com.soum91.reynardtv"
             app["iconURL"] = "https://raw.githubusercontent.com/soum91/reynard-browser/android-tv/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
+        } else if amazon {
+            app["packageName"] = "com.amazon.mp3"
+            app["iconURL"] = "https://raw.githubusercontent.com/soum91/amazonmusictvplus/main/assets/amazon_music_tv_banner.png"
         }
         return try JSONSerialization.data(withJSONObject: ["apps": [app]])
     }

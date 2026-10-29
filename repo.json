@@ -2,7 +2,7 @@
   "name": "EmberTV",
   "identifier": "com.soum91.embertv.source",
   "subtitle": "Android TV apps from GitHub releases",
-  "description": "EmberTV's signed APK releases and future compatible TV apps.",
+  "description": "Unified GitHub APK catalog: EmberTV, Reynard TV, and Amazon Music TV Plus.",
   "sourceURL": "https://raw.githubusercontent.com/soum91/embertv/main/repo.json",
   "apps": [
     {
@@ -113,6 +113,84 @@
           "downloadURL": "https://github.com/soum91/reynard-browser/releases/download/android-tv/Reynard-TV-0.2.0-build-9.apk",
           "size": 169299668,
           "sha256": "2b0c3379e0021841a55524119ce6979a3e5cbe3352c3d27c581cb1bb69817f01"
+        }
+      ]
+    },
+    {
+      "name": "Amazon Music TV Plus",
+      "packageName": "com.amazon.mp3",
+      "developerName": "soum91",
+      "subtitle": "Amazon Music port for Android TV",
+      "localizedDescription": "Android TV adaptation of Amazon Music, with supported audio passthrough and TV-friendly controls.",
+      "category": "entertainment",
+      "repositoryURL": "https://github.com/soum91/amazonmusictvplus",
+      "iconURL": "https://raw.githubusercontent.com/soum91/amazonmusictvplus/main/assets/amazon_music_tv_banner.png",
+      "versions": [
+        {
+          "version": "26.36.1-tv.10",
+          "buildVersion": "526360120",
+          "versionCode": 526360120,
+          "date": "2026-10-29",
+          "localizedDescription": "## Changes\r\n- Replaced the fixed stereo reduction with an automatic PCM loudness leveler.\r\n- Measures rolling PCM RMS level and continuously adjusts gain toward a configurable target.\r\n- Uses slow attack and release smoothing to reduce audible pumping.\r\n- Limits automatic gain to -12 through +6 dB and respects PCM peak headroom to reduce clipping.\r\n- Added target presets on Now Playing and a -24 through -12 dBFS target slider under Audio output.\r\n- Displays live input dBFS, target and applied gain in Audio output diagnostics.\r\n\r\n## Passthrough protection\r\nThe analyzer and gain processor run only in Amazon's decoded PCM write path. DD+, E-AC3/JOC Atmos, Dolby Digital, IEC61937 and MPEG-H passthrough bypass it and remain at unity gain.\r\n\r\n## Verification\r\n- Confirmed the PCM write hook is present in the final classes15.dex.\r\n- APK signature v3 and zip alignment verified.\r\n- Signing certificate SHA-256: 99bec8a3a491133fc24e245459b5c5c2a5bddbf2b7fdff498808bcd8c78d6125\r\n- APK SHA-256: 0bc0991f518c2604c4a3c785fd0eca6b01deb2587352866e33581c2021f3645e",
+          "changelog": "## Changes\r\n- Replaced the fixed stereo reduction with an automatic PCM loudness leveler.\r\n- Measures rolling PCM RMS level and continuously adjusts gain toward a configurable target.\r\n- Uses slow attack and release smoothing to reduce audible pumping.\r\n- Limits automatic gain to -12 through +6 dB and respects PCM peak headroom to reduce clipping.\r\n- Added target presets on Now Playing and a -24 through -12 dBFS target slider under Audio output.\r\n- Displays live input dBFS, target and applied gain in Audio output diagnostics.\r\n\r\n## Passthrough protection\r\nThe analyzer and gain processor run only in Amazon's decoded PCM write path. DD+, E-AC3/JOC Atmos, Dolby Digital, IEC61937 and MPEG-H passthrough bypass it and remain at unity gain.\r\n\r\n## Verification\r\n- Confirmed the PCM write hook is present in the final classes15.dex.\r\n- APK signature v3 and zip alignment verified.\r\n- Signing certificate SHA-256: 99bec8a3a491133fc24e245459b5c5c2a5bddbf2b7fdff498808bcd8c78d6125\r\n- APK SHA-256: 0bc0991f518c2604c4a3c785fd0eca6b01deb2587352866e33581c2021f3645e",
+          "downloadURL": "https://github.com/soum91/amazonmusictvplus/releases/download/v26.36.1-tv.10/Amazon-Music-TV-26.36.1-tv.10-arm32.apk",
+          "size": 141015862,
+          "sha256": "0bc0991f518c2604c4a3c785fd0eca6b01deb2587352866e33581c2021f3645e"
+        },
+        {
+          "version": "26.36.1-tv.9",
+          "buildVersion": "526360119",
+          "versionCode": 526360119,
+          "date": "2026-10-29",
+          "localizedDescription": "## Changes\r\n- Repeat is now handled by TV Plus because Amazon rejects the standard MediaSession repeat command.\r\n- Repeat One restarts the current track; Repeat All restarts the exposed queue or browsed track list.\r\n- Playable cards such as My Likes now open a detail page and require an explicit Play selection instead of starting immediately.\r\n- Added a visible volume-leveler control to Now Playing with Off, 3, 6, 9 and 12 dB stereo/PCM reduction presets.\r\n- Go to Artist and Go to Album now use Amazon catalog search rather than the unavailable library-browse path.\r\n- Replaced the broken Search route with Amazon's native deep-link search handler and external search fallback.\r\n\r\n## Audio behavior\r\nThe leveler reduces decoded stereo/PCM only. DD+/Atmos and MPEG-H passthrough remain unchanged so encoded spatial audio is not altered.\r\n\r\n## Verification\r\n- APK signature v3 verified.\r\n- Signing certificate SHA-256: 99bec8a3a491133fc24e245459b5c5c2a5bddbf2b7fdff498808bcd8c78d6125\r\n- APK SHA-256: 2e7753d64d56b60f090151a77ad9262c0125e6854d12c01ef46a186868ec21b3",
+          "changelog": "## Changes\r\n- Repeat is now handled by TV Plus because Amazon rejects the standard MediaSession repeat command.\r\n- Repeat One restarts the current track; Repeat All restarts the exposed queue or browsed track list.\r\n- Playable cards such as My Likes now open a detail page and require an explicit Play selection instead of starting immediately.\r\n- Added a visible volume-leveler control to Now Playing with Off, 3, 6, 9 and 12 dB stereo/PCM reduction presets.\r\n- Go to Artist and Go to Album now use Amazon catalog search rather than the unavailable library-browse path.\r\n- Replaced the broken Search route with Amazon's native deep-link search handler and external search fallback.\r\n\r\n## Audio behavior\r\nThe leveler reduces decoded stereo/PCM only. DD+/Atmos and MPEG-H passthrough remain unchanged so encoded spatial audio is not altered.\r\n\r\n## Verification\r\n- APK signature v3 verified.\r\n- Signing certificate SHA-256: 99bec8a3a491133fc24e245459b5c5c2a5bddbf2b7fdff498808bcd8c78d6125\r\n- APK SHA-256: 2e7753d64d56b60f090151a77ad9262c0125e6854d12c01ef46a186868ec21b3",
+          "downloadURL": "https://github.com/soum91/amazonmusictvplus/releases/download/v26.36.1-tv.9/Amazon-Music-TV-26.36.1-tv.9-arm32.apk",
+          "size": 141011766,
+          "sha256": "2e7753d64d56b60f090151a77ad9262c0125e6854d12c01ef46a186868ec21b3"
+        },
+        {
+          "version": "26.36.1-tv.8",
+          "buildVersion": "526360118",
+          "versionCode": 526360118,
+          "date": "2026-10-29",
+          "localizedDescription": "## Changes\r\n- Added Shuffle and Repeat controls to Now Playing and the Player menu.\r\n- Cards now open their collection or container when available instead of immediately starting playback.\r\n- Added an Atmos-safe volume leveler. It reduces decoded stereo/PCM by 6 dB by default while leaving DD+/Atmos passthrough unchanged.\r\n- Added a 0-12 dB stereo reduction control under Audio output.\r\n- Preserves the existing package ID and signing certificate for install-over updates.\r\n\r\n## Verification\r\n- APK signature v3 verified.\r\n- Signing certificate SHA-256: 99bec8a3a491133fc24e245459b5c5c2a5bddbf2b7fdff498808bcd8c78d6125\r\n- APK SHA-256: eea021d6ac592e1fe244f4408b8a997d41f4b064140259484e13b43c94114875",
+          "changelog": "## Changes\r\n- Added Shuffle and Repeat controls to Now Playing and the Player menu.\r\n- Cards now open their collection or container when available instead of immediately starting playback.\r\n- Added an Atmos-safe volume leveler. It reduces decoded stereo/PCM by 6 dB by default while leaving DD+/Atmos passthrough unchanged.\r\n- Added a 0-12 dB stereo reduction control under Audio output.\r\n- Preserves the existing package ID and signing certificate for install-over updates.\r\n\r\n## Verification\r\n- APK signature v3 verified.\r\n- Signing certificate SHA-256: 99bec8a3a491133fc24e245459b5c5c2a5bddbf2b7fdff498808bcd8c78d6125\r\n- APK SHA-256: eea021d6ac592e1fe244f4408b8a997d41f4b064140259484e13b43c94114875",
+          "downloadURL": "https://github.com/soum91/amazonmusictvplus/releases/download/v26.36.1-tv.8/Amazon-Music-TV-26.36.1-tv.8-arm32.apk",
+          "size": 141011766,
+          "sha256": "eea021d6ac592e1fe244f4408b8a997d41f4b064140259484e13b43c94114875"
+        },
+        {
+          "version": "26.36.1-tv.6",
+          "buildVersion": "526360116",
+          "versionCode": 526360116,
+          "date": "2026-10-25",
+          "localizedDescription": "Install over build 5. Package and signing key are unchanged.\r\n\r\nChanges:\r\n- Black native TV interface with larger rounded artwork, artist subtitles, fixed bottom navigation/player and native vector controls.\r\n- Redesigned full-screen player with Lyrics, Queue and song options.\r\n- Hold OK on music for context menus. Menu/Info jumps to the mini-player; Up/Back returns.\r\n- Bundled Amazon handlers for similar music, play next, queue, playlist and related library views. Available actions depend on the item/account.\r\n- Native lyrics page uses Amazon's existing authenticated lyrics loader, timing and attribution.\r\n- Account status page and Amazon's bundled code-based sign-in flow; mobile account screen is labeled Legacy.\r\n- Per-song audio snapshots and MPEG-H/360 format diagnostics.\r\n\r\nLimits: direct Amazon/Alexa Cast, Google Cast and AirPlay receiving inside TV Plus are NOT implemented. The TV's built-in receivers remain separate. Sony 360 passthrough is NOT enabled.\r\n\r\nAll 17 playback dex files and 52 native libraries match build 5 byte-for-byte. API 35 compilation, ZIP integrity, alignment and existing v3 signature verified. Physical TV tests are still needed for the new UI, lyrics, account linking, queue edits and sustained Atmos.\r\n\r\nAPK SHA256: 4a9330fda584750703a26f65ae63f84b2d1526134cd5e47c79b1afaa0e4b76cc",
+          "changelog": "Install over build 5. Package and signing key are unchanged.\r\n\r\nChanges:\r\n- Black native TV interface with larger rounded artwork, artist subtitles, fixed bottom navigation/player and native vector controls.\r\n- Redesigned full-screen player with Lyrics, Queue and song options.\r\n- Hold OK on music for context menus. Menu/Info jumps to the mini-player; Up/Back returns.\r\n- Bundled Amazon handlers for similar music, play next, queue, playlist and related library views. Available actions depend on the item/account.\r\n- Native lyrics page uses Amazon's existing authenticated lyrics loader, timing and attribution.\r\n- Account status page and Amazon's bundled code-based sign-in flow; mobile account screen is labeled Legacy.\r\n- Per-song audio snapshots and MPEG-H/360 format diagnostics.\r\n\r\nLimits: direct Amazon/Alexa Cast, Google Cast and AirPlay receiving inside TV Plus are NOT implemented. The TV's built-in receivers remain separate. Sony 360 passthrough is NOT enabled.\r\n\r\nAll 17 playback dex files and 52 native libraries match build 5 byte-for-byte. API 35 compilation, ZIP integrity, alignment and existing v3 signature verified. Physical TV tests are still needed for the new UI, lyrics, account linking, queue edits and sustained Atmos.\r\n\r\nAPK SHA256: 4a9330fda584750703a26f65ae63f84b2d1526134cd5e47c79b1afaa0e4b76cc",
+          "downloadURL": "https://github.com/soum91/amazonmusictvplus/releases/download/v26.36.1-tv.6/Amazon-Music-TV-26.36.1-tv.6-arm32.apk",
+          "size": 139168500,
+          "sha256": "4a9330fda584750703a26f65ae63f84b2d1526134cd5e47c79b1afaa0e4b76cc"
+        },
+        {
+          "version": "26.36.1-tv.5",
+          "buildVersion": "526360115",
+          "versionCode": 526360115,
+          "date": "2026-10-24",
+          "localizedDescription": "Build 5 for ARM32 Google TV. Install over build 4; package com.amazon.mp3 and the private signing certificate are unchanged.\r\n\r\nChanges:\r\n- Hold OK on a card or control to jump straight to the mini-player. Menu/Info also jumps there; Up or Back restores the previous focus without scrolling through the library.\r\n- Add Screen off to the mini-player, full-screen player, media notification and floating dock. Default OLED black mode needs no setup and keeps the TV awake with black pixels. OK/Back restores the picture; media and volume keys remain available.\r\n- Optional Sony Picture off mode uses the TV's localhost API and existing IP-control key when required. Configure it under Settings, or hold OK on the mini-player Screen off button. It falls back to black mode when unavailable.\r\n- Add playback-only CPU/Wi-Fi wake locks and screen/standby event history in Audio output.\r\n\r\nPower/standby limitation: the remote Power button remains controlled by Sony/Android. Continued HDMI/eARC audio during actual standby is not guaranteed or hardware-tested. Use Screen off when standby interrupts playback.\r\n\r\nValidation: Java compiled; ZIP integrity, version, launchers, ABI, zipalign and APK v3 signature checked. All 17 existing playback dex files and 52 native libraries match the user-confirmed Atmos build 4 byte-for-byte. Navigation, Sony panel control and actual standby behavior still need device testing.\r\n\r\nAPK SHA-256:\r\n9593a8d9527a2f5761511a9d7dbbaf58af4565de26b34e25966c7f0bde40dccb",
+          "changelog": "Build 5 for ARM32 Google TV. Install over build 4; package com.amazon.mp3 and the private signing certificate are unchanged.\r\n\r\nChanges:\r\n- Hold OK on a card or control to jump straight to the mini-player. Menu/Info also jumps there; Up or Back restores the previous focus without scrolling through the library.\r\n- Add Screen off to the mini-player, full-screen player, media notification and floating dock. Default OLED black mode needs no setup and keeps the TV awake with black pixels. OK/Back restores the picture; media and volume keys remain available.\r\n- Optional Sony Picture off mode uses the TV's localhost API and existing IP-control key when required. Configure it under Settings, or hold OK on the mini-player Screen off button. It falls back to black mode when unavailable.\r\n- Add playback-only CPU/Wi-Fi wake locks and screen/standby event history in Audio output.\r\n\r\nPower/standby limitation: the remote Power button remains controlled by Sony/Android. Continued HDMI/eARC audio during actual standby is not guaranteed or hardware-tested. Use Screen off when standby interrupts playback.\r\n\r\nValidation: Java compiled; ZIP integrity, version, launchers, ABI, zipalign and APK v3 signature checked. All 17 existing playback dex files and 52 native libraries match the user-confirmed Atmos build 4 byte-for-byte. Navigation, Sony panel control and actual standby behavior still need device testing.\r\n\r\nAPK SHA-256:\r\n9593a8d9527a2f5761511a9d7dbbaf58af4565de26b34e25966c7f0bde40dccb",
+          "downloadURL": "https://github.com/soum91/amazonmusictvplus/releases/download/v26.36.1-tv.5/Amazon-Music-TV-26.36.1-tv.5-arm32.apk",
+          "size": 136657586,
+          "sha256": "9593a8d9527a2f5761511a9d7dbbaf58af4565de26b34e25966c7f0bde40dccb"
+        },
+        {
+          "version": "26.36.1-tv.4",
+          "buildVersion": "526360114",
+          "versionCode": 526360114,
+          "date": "2026-10-24",
+          "localizedDescription": "Build 4 for ARM32 Google TV. Install over builds 1, 2 or 3; package com.amazon.mp3 and the signing certificate are unchanged.\r\n\r\nChanges:\r\n- Report the original player's observed AudioTrack encoding, routed device, sample rate, channels, offload state and underruns.\r\n- Distinguish the selected Atmos/JOC source from the observed Android output.\r\n- Move repeated diagnostic reads off the UI thread; reduce repeated PiP, media-session, text and artwork work.\r\n- Hide the floating dock while the TV activity is visible.\r\n\r\nValidation: native Java compiled, ZIP integrity and APK v3 signature verified, same signing certificate, ARM32 libraries preserved. The routing-monitor patch adds one read-only observer call.\r\n\r\nKnown limitation: TV responsiveness and sustained HDMI Atmos/UHD output still need device testing. This build does not claim that the reported Atmos loss is fixed.\r\n\r\nAPK SHA-256:\r\n8620a8037b20fca056fc7b41f5fa71e9cc63a63941c890edc04b68ae00a5fcf0",
+          "changelog": "Build 4 for ARM32 Google TV. Install over builds 1, 2 or 3; package com.amazon.mp3 and the signing certificate are unchanged.\r\n\r\nChanges:\r\n- Report the original player's observed AudioTrack encoding, routed device, sample rate, channels, offload state and underruns.\r\n- Distinguish the selected Atmos/JOC source from the observed Android output.\r\n- Move repeated diagnostic reads off the UI thread; reduce repeated PiP, media-session, text and artwork work.\r\n- Hide the floating dock while the TV activity is visible.\r\n\r\nValidation: native Java compiled, ZIP integrity and APK v3 signature verified, same signing certificate, ARM32 libraries preserved. The routing-monitor patch adds one read-only observer call.\r\n\r\nKnown limitation: TV responsiveness and sustained HDMI Atmos/UHD output still need device testing. This build does not claim that the reported Atmos loss is fixed.\r\n\r\nAPK SHA-256:\r\n8620a8037b20fca056fc7b41f5fa71e9cc63a63941c890edc04b68ae00a5fcf0",
+          "downloadURL": "https://github.com/soum91/amazonmusictvplus/releases/download/v26.36.1-tv.4/Amazon-Music-TV-26.36.1-tv.4-arm32.apk",
+          "size": 133380719,
+          "sha256": "8620a8037b20fca056fc7b41f5fa71e9cc63a63941c890edc04b68ae00a5fcf0"
         }
       ]
     }

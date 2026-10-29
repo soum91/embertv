@@ -241,7 +241,7 @@ public final class MainActivity extends Activity {
                     }).show();
         });
         for (String source : Catalog.sources(this)) {
-            if (source.equals(Catalog.DEFAULT) || source.equals(Catalog.REYNARD)) { paragraph("Built in: " + source); continue; }
+            if (source.equals(Catalog.DEFAULT) || source.equals(Catalog.REYNARD) || source.equals(Catalog.AMAZON)) { paragraph("Built in: " + source); continue; }
             action(source + "   ✕", () -> new AlertDialog.Builder(this).setTitle("Remove source?")
                     .setMessage(source).setNegativeButton("Cancel", null)
                     .setPositiveButton("Remove", (d, w) -> { Catalog.remove(this, source); show("Sources"); refresh(); }).show());

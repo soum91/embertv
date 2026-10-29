@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 final class Catalog {
     static final String DEFAULT = "https://raw.githubusercontent.com/soum91/embertv/main/repo.json";
     static final String REYNARD = "https://github.com/soum91/reynard-browser";
+    static final String AMAZON = "https://github.com/soum91/amazonmusictvplus";
     static final String[] NAMES = {"repo.json", "source.json", "apps.json", "app-repo.json", "AltStore.json"};
 
     static final class Version {
@@ -36,6 +37,7 @@ final class Catalog {
         LinkedHashSet<String> result = new LinkedHashSet<>();
         result.add(DEFAULT);
         result.add(REYNARD);
+        result.add(AMAZON);
         if (!stored.isEmpty()) for (String x : stored.split("\\n")) if (!x.trim().isEmpty()) result.add(x.trim());
         return new ArrayList<>(result);
     }
@@ -114,11 +116,14 @@ final class Catalog {
         String owner = parts[1], repo = parts[2];
         JSONArray releases = new JSONArray(get("https://api.github.com/repos/" + owner + "/" + repo + "/releases?per_page=50"));
         App app = new App();
-        app.name = repo.equalsIgnoreCase("reynard-browser") ? "Reynard TV" : repo;
-        app.packageName = repo.equalsIgnoreCase("reynard-browser") ? "com.soum91.reynardtv" : "";
+        boolean reynard = owner.equalsIgnoreCase("soum91") && repo.equalsIgnoreCase("reynard-browser");
+        boolean amazon = owner.equalsIgnoreCase("soum91") && repo.equalsIgnoreCase("amazonmusictvplus");
+        app.name = reynard ? "Reynard TV" : amazon ? "Amazon Music TV Plus" : repo;
+        app.packageName = reynard ? "com.soum91.reynardtv" : amazon ? "com.amazon.mp3" : "";
         app.summary = "GitHub APK releases from " + owner + "/" + repo;
-        app.icon = repo.equalsIgnoreCase("reynard-browser")
-                ? "https://raw.githubusercontent.com/soum91/reynard-browser/android-tv/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" : "";
+        app.icon = reynard
+                ? "https://raw.githubusercontent.com/soum91/reynard-browser/android-tv/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
+                : amazon ? "https://raw.githubusercontent.com/soum91/amazonmusictvplus/main/assets/amazon_music_tv_banner.png" : "";
         for (int i = 0; i < releases.length(); i++) {
             JSONObject release = releases.optJSONObject(i);
             if (release == null || release.optBoolean("draft", false)) continue;
@@ -132,9 +137,13 @@ final class Catalog {
                 if (!filename.toLowerCase(java.util.Locale.ROOT).endsWith(".apk") || !url.startsWith("https://github.com/")) continue;
                 Version v = new Version();
                 v.url = url;
-                v.code = buildNumber(filename, release.optString("tag_name", ""));
+                String tag = release.optString("tag_name", "");
+                long releaseBuild = buildNumber(filename, tag);
+                if (amazon && releaseBuild == 0) continue;
+                v.code = amazon ? 526360110L + releaseBuild : releaseBuild;
                 Matcher ver = Pattern.compile("(\\d+\\.\\d+(?:\\.\\d+)+)").matcher(filename);
-                v.name = ver.find() ? ver.group(1) + " (build " + v.code + ")" : release.optString("tag_name", "latest");
+                v.name = amazon ? tag.replaceFirst("^v", "")
+                        : ver.find() ? ver.group(1) + " (build " + releaseBuild + ")" : tag;
                 String digest = asset.optString("digest", "");
                 v.sha256 = digest.startsWith("sha256:") ? digest.substring(7) : "";
                 v.changelog = release.optString("body", "");
