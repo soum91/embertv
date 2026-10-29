@@ -56,8 +56,9 @@ jobs:
           git add source.json
           git commit -m "catalog: publish Companion $VERSION"
           for attempt in 1 2 3; do
+            git status --short
             git fetch origin main
-            git rebase origin/main
+            git -c rebase.autoStash=true rebase origin/main
             if git push origin HEAD:main; then break; fi
             if [ "$attempt" -eq 3 ]; then exit 1; fi
           done
