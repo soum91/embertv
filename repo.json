@@ -14,6 +14,17 @@
       "category": "utilities",
       "versions": [
         {
+          "version": "0.1.0.10",
+          "buildVersion": "10",
+          "date": "2026-10-29",
+          "localizedDescription": "* fix(android): avoid local variable shadowing in GitHub catalog parser\n* catalog: publish Companion 0.1.0.6\n* fix(ios): correct safe-area layout and source forms; feat(catalog): discover GitHub APK releases and add Reynard TV\n* catalog: publish EmberTV 0.1.0.8",
+          "changelog": "* fix(android): avoid local variable shadowing in GitHub catalog parser\n* catalog: publish Companion 0.1.0.6\n* fix(ios): correct safe-area layout and source forms; feat(catalog): discover GitHub APK releases and add Reynard TV\n* catalog: publish EmberTV 0.1.0.8",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/tv-v0.1.0.10/EmberTV.apk",
+          "size": 88424,
+          "versionCode": 10,
+          "sha256": "a4fcbb4a598b3f870214537414f5ab2d589580abf4cedea28782b4c9b09d2b48"
+        },
+        {
           "version": "0.1.0.8",
           "buildVersion": "8",
           "date": "2026-10-29",
