@@ -30,8 +30,15 @@ jobs:
       - name: Compile unsigned iOS companion
         run: |
           xcodebuild -project companion/EmberTVCompanion.xcodeproj -scheme EmberTVCompanion -configuration Release -sdk iphoneos -derivedDataPath "$RUNNER_TEMP/EmberTVDerived" MARKETING_VERSION=0.1.0 CURRENT_PROJECT_VERSION='${{ github.run_number }}' CODE_SIGNING_ALLOWED=NO build
+          APP="$RUNNER_TEMP/EmberTVDerived/Build/Products/Release-iphoneos/EmberTV Companion.app"
+          PLIST="$APP/Info.plist"
+          # Missing launch-screen keys cause modern iPhones to letterbox the entire app.
+          /usr/libexec/PlistBuddy -c 'Print :UILaunchScreen' "$PLIST" >/dev/null
+          /usr/libexec/PlistBuddy -c 'Print :NSLocalNetworkUsageDescription' "$PLIST" >/dev/null
+          /usr/libexec/PlistBuddy -c 'Print :NSAppTransportSecurity:NSAllowsLocalNetworking' "$PLIST" >/dev/null
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST")" = '${{ github.run_number }}'
           mkdir -p "$RUNNER_TEMP/package/Payload"
-          cp -R "$RUNNER_TEMP/EmberTVDerived/Build/Products/Release-iphoneos/EmberTV Companion.app" "$RUNNER_TEMP/package/Payload/EmberTV Companion.app"
+          cp -R "$APP" "$RUNNER_TEMP/package/Payload/EmberTV Companion.app"
           (cd "$RUNNER_TEMP/package" && zip -qr "$GITHUB_WORKSPACE/EmberTV-Companion.ipa" Payload)
       - uses: actions/upload-artifact@v4
         with:

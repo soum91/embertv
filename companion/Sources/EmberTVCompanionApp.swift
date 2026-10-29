@@ -5,6 +5,11 @@ struct EmberTVCompanionApp: App {
     @StateObject private var model = TVModel()
 
     var body: some Scene {
-        WindowGroup { ContentView().environmentObject(model).tint(.orange) }
+        WindowGroup {
+            ContentView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .environmentObject(model)
+                .tint(.orange)
+        }
     }
 }
