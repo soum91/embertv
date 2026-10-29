@@ -14,6 +14,17 @@
       "category": "utilities",
       "versions": [
         {
+          "version": "0.1.0.7",
+          "buildVersion": "7",
+          "date": "2026-10-29",
+          "localizedDescription": "* feat(icons): brand Android TV and iPhone apps; publish catalog artwork\n* fix(catalog): correct legacy v0.1.0.5 APK asset URL\n* catalog: publish EmberTV 0.1.0.6",
+          "changelog": "* feat(icons): brand Android TV and iPhone apps; publish catalog artwork\n* fix(catalog): correct legacy v0.1.0.5 APK asset URL\n* catalog: publish EmberTV 0.1.0.6",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/tv-v0.1.0.7/EmberTV.apk",
+          "size": 65828,
+          "versionCode": 7,
+          "sha256": "3f6de34264ec8ad89de41edd2bc7a2afb6e911ee0b526d91c9600cbe0675f41f"
+        },
+        {
           "version": "0.1.0.6",
           "buildVersion": "6",
           "date": "2026-10-29",
@@ -35,7 +46,9 @@
           "versionCode": 5,
           "sha256": "4d1a8bb089c57728f0ff3a26e1b08e03c6cf52a19f0e8e87e659a6f2cb5a5a40"
         }
-      ]
+      ],
+      "iconURL": "https://raw.githubusercontent.com/soum91/embertv/main/assets/embertv-icon.png"
     }
-  ]
+  ],
+  "iconURL": "https://raw.githubusercontent.com/soum91/embertv/main/assets/embertv-icon.png"
 }
