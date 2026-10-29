@@ -8,7 +8,7 @@ An Android TV APK catalog and installer with an iOS companion. EmberTV reads pub
 
 - Remote-friendly navigation: Discover, Installed, Sources, Pair iPhone, and About.
 - Multiple persistent sources. Paste a direct HTTPS JSON catalog URL or a public GitHub repository URL. GitHub repositories without a JSON feed are browsed through their published `.apk` release assets, with SHA-256 digests when GitHub provides them.
-- One consolidated EmberTV JSON catalog plus built-in GitHub release discovery for Reynard TV and Amazon Music TV Plus. New APK releases are detected without manually updating JSON versions.
+- One consolidated EmberTV JSON catalog for EmberTV, Drift, Reynard TV and Amazon Music TV Plus, plus built-in GitHub release discovery for Reynard and Amazon Music TV Plus. Drift's current catalog entry is still its **build 2 radio diagnostic**, not the new transfer source, until a build 3 APK signed with its original key is released.
 - Both EmberTV catalogs and AltStore-style `apps[].versions[]` entries with APK `downloadURL` links. iOS-only IPA entries are ignored.
 - Installed version comparisons using Android `versionCode` and public signing certificates. A mismatch stops before installation and does not remove app data.
 - HTTPS download, optional SHA-256 verification, Android PackageInstaller, and explicit TV confirmation.
@@ -16,7 +16,7 @@ An Android TV APK catalog and installer with an iOS companion. EmberTV reads pub
 
 ## iPhone companion
 
-The iOS 16+ companion browses JSON and public GitHub APK release sources, pairs with the TV via its IP address and the code shown on the Pair screen, and asks the TV to download and install selected apps. It also sends a local `.apk` through the Files picker. Both devices must be on the same trusted LAN, and EmberTV must be open on the TV to receive commands. This initial companion uses a pairing token over local HTTP and should **not** be exposed to the public internet.
+The iOS 16+ companion browses JSON and public GitHub APK release sources, pairs with the TV via its IP address and the code shown on the Pair screen, and asks the TV to download and install selected apps. It also sends a local `.apk` through the Files picker. The new **Drift** tab separately pairs with the Drift TV file receiver on port `45788` using its six-digit code, sends general files over the local network or a TV-hosted Wi-Fi Direct group, and supports a Bluetooth LE small-file fallback on TVs with BLE peripheral advertising. The two pairing codes and servers are independent. Both apps must remain open for their transfers. Local HTTP is for trusted private networks only and must **not** be exposed to the public internet.
 
 ## JSON format
 
