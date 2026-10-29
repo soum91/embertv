@@ -14,6 +14,17 @@
       "category": "utilities",
       "versions": [
         {
+          "version": "0.1.0.12",
+          "buildVersion": "12",
+          "date": "2026-10-29",
+          "localizedDescription": "* fix(tv): close APK session write streams before commit\n* catalog: publish EmberTV 0.1.0.11",
+          "changelog": "* fix(tv): close APK session write streams before commit\n* catalog: publish EmberTV 0.1.0.11",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/tv-v0.1.0.12/EmberTV.apk",
+          "size": 88984,
+          "versionCode": 12,
+          "sha256": "eb1229b2bc0ff6d89241749b4f2a46f06d535cf21030ff311e3d6d449e6055a8"
+        },
+        {
           "version": "0.1.0.11",
           "buildVersion": "11",
           "date": "2026-10-29",
