@@ -1,0 +1,58 @@
+name: iPhone companion build and release
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'companion/**'
+      - 'scripts/update_repo.py'
+      - '.github/workflows/companion.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: embertv-iphone-release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate native Xcode project
+        working-directory: companion
+        run: xcodegen generate
+      - name: Compile unsigned iOS companion
+        run: |
+          xcodebuild -project companion/EmberTVCompanion.xcodeproj -scheme EmberTVCompanion -configuration Release -sdk iphoneos -derivedDataPath "$RUNNER_TEMP/EmberTVDerived" MARKETING_VERSION=0.1.0 CURRENT_PROJECT_VERSION='${{ github.run_number }}' CODE_SIGNING_ALLOWED=NO build
+          mkdir -p "$RUNNER_TEMP/package/Payload"
+          cp -R "$RUNNER_TEMP/EmberTVDerived/Build/Products/Release-iphoneos/EmberTVCompanion.app" "$RUNNER_TEMP/package/Payload/EmberTVCompanion.app"
+          (cd "$RUNNER_TEMP/package" && zip -qr "$GITHUB_WORKSPACE/EmberTV-Companion.ipa" Payload)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EmberTV-iPhone-unsigned-${{ github.run_number }}
+          path: EmberTV-Companion.ipa
+      - name: Publish unsigned IPA and update source feed
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          BUILD='${{ github.run_number }}'
+          VERSION="0.1.0.$BUILD"
+          TAG="companion-v$VERSION"
+          PREV="$(git tag --sort=-v:refname -l 'companion-v*' | head -1)"
+          if [ -n "$PREV" ]; then git log "$PREV"..HEAD --pretty='* %s' --no-merges > "$RUNNER_TEMP/notes.txt"; else git log -20 --pretty='* %s' --no-merges > "$RUNNER_TEMP/notes.txt"; fi
+          test -s "$RUNNER_TEMP/notes.txt" || printf 'Maintenance build %s\n' "$BUILD" > "$RUNNER_TEMP/notes.txt"
+          gh release create "$TAG" 'EmberTV-Companion.ipa#EmberTV-Companion.ipa' --title "EmberTV Companion $VERSION (unsigned)" --notes-file "$RUNNER_TEMP/notes.txt"
+          python3 scripts/update_repo.py ios --version "$VERSION" --build "$BUILD" --url "https://github.com/${{ github.repository }}/releases/download/$TAG/EmberTV-Companion.ipa" --artifact 'EmberTV-Companion.ipa' --notes "$RUNNER_TEMP/notes.txt"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add source.json
+          git commit -m "catalog: publish Companion $VERSION"
+          git push origin HEAD:main

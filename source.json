@@ -1,0 +1,8 @@
+{
+  "name": "EmberTV Companion",
+  "identifier": "com.soum91.embertv.companion.source",
+  "subtitle": "Control Android TV installs from iPhone",
+  "description": "Unsigned iOS companion releases for signing with EmberSign or FlareStore.",
+  "sourceURL": "https://raw.githubusercontent.com/soum91/embertv/main/source.json",
+  "apps": []
+}

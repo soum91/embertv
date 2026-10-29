@@ -1,0 +1,36 @@
+plugins { id 'com.android.application' }
+
+def releaseKeystorePath = System.getenv('EMBER_KEYSTORE_PATH')
+
+android {
+    namespace 'com.soum91.embertv'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'com.soum91.embertv'
+        minSdk 28
+        targetSdk 35
+        versionCode Integer.parseInt(System.getenv('EMBER_VERSION_CODE') ?: '1')
+        versionName System.getenv('EMBER_VERSION_NAME') ?: '0.1.0.1'
+    }
+    signingConfigs {
+        release {
+            if (releaseKeystorePath) {
+                storeFile file(releaseKeystorePath)
+                storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (releaseKeystorePath) signingConfig signingConfigs.release
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    packaging { resources { excludes += ['META-INF/**'] } }
+}

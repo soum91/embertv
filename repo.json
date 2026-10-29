@@ -1,0 +1,8 @@
+{
+  "name": "EmberTV",
+  "identifier": "com.soum91.embertv.source",
+  "subtitle": "Android TV apps from GitHub releases",
+  "description": "EmberTV's signed APK releases and future compatible TV apps.",
+  "sourceURL": "https://raw.githubusercontent.com/soum91/embertv/main/repo.json",
+  "apps": []
+}
