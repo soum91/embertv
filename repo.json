@@ -4,5 +4,27 @@
   "subtitle": "Android TV apps from GitHub releases",
   "description": "EmberTV's signed APK releases and future compatible TV apps.",
   "sourceURL": "https://raw.githubusercontent.com/soum91/embertv/main/repo.json",
-  "apps": []
+  "apps": [
+    {
+      "name": "EmberTV",
+      "packageName": "com.soum91.embertv",
+      "developerName": "soum91",
+      "subtitle": "GitHub APK browser and installer for Android TV",
+      "localizedDescription": "Browse JSON catalogs, install signed APKs, and pair an iPhone companion.",
+      "category": "utilities",
+      "versions": [
+        {
+          "version": "0.1.0.5",
+          "buildVersion": "5",
+          "date": "2026-10-29",
+          "localizedDescription": "* fix(ci): correct permanent signing certificate fingerprint assertion\n* ci(android): verify permanent APK signing certificate before publishing\n* feat(tv): add searchable icon cards and downloads status\n* catalog: publish Companion 0.1.0.2\n* fix(ci): use hosted Android SDK and correct iOS app bundle name\n* feat: EmberTV catalog installer and native iPhone companion\n* Initial commit",
+          "changelog": "* fix(ci): correct permanent signing certificate fingerprint assertion\n* ci(android): verify permanent APK signing certificate before publishing\n* feat(tv): add searchable icon cards and downloads status\n* catalog: publish Companion 0.1.0.2\n* fix(ci): use hosted Android SDK and correct iOS app bundle name\n* feat: EmberTV catalog installer and native iPhone companion\n* Initial commit",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/tv-v0.1.0.5/EmberTV.apk",
+          "size": 53880,
+          "versionCode": 5,
+          "sha256": "4d1a8bb089c57728f0ff3a26e1b08e03c6cf52a19f0e8e87e659a6f2cb5a5a40"
+        }
+      ]
+    }
+  ]
 }
