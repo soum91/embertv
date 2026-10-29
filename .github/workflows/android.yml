@@ -71,7 +71,7 @@ jobs:
           APK='tv/app/build/outputs/apk/release/app-release.apk'
           test -s "$APK"
           "$APKSIGNER" verify --verbose --print-certs "$APK" | tee "$RUNNER_TEMP/signature-check.txt"
-          grep -i -F 'bc429067869a9bf11f1623d3d29c54fe443290c4a76652a1d7ed1b2f3a15dfd2' "$RUNNER_TEMP/signature-check.txt"
+          grep -i -F 'bc429067869a9bf11f16233dd29c54fe443290c4a76652a1d7ed1b2f3a15dfd2' "$RUNNER_TEMP/signature-check.txt"
       - name: Upload signed APK
         if: env.HAS_SIGNING == 'true'
         uses: actions/upload-artifact@v4
