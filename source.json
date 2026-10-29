@@ -14,6 +14,16 @@
       "category": "utilities",
       "versions": [
         {
+          "version": "0.1.0.5",
+          "buildVersion": "5",
+          "date": "2026-10-29",
+          "localizedDescription": "* fix(branding): use actual EmberSign flame for EmberTV apps and JSON repo icons\n* catalog: restore Companion icon release history and changelog\n* catalog: publish Companion 0.1.0.4",
+          "changelog": "* fix(branding): use actual EmberSign flame for EmberTV apps and JSON repo icons\n* catalog: restore Companion icon release history and changelog\n* catalog: publish Companion 0.1.0.4",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/companion-v0.1.0.5/EmberTV-Companion.ipa",
+          "size": 281417,
+          "minOSVersion": "16.0"
+        },
+        {
           "version": "0.1.0.4",
           "buildVersion": "4",
           "date": "2026-10-29",
