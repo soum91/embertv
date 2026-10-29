@@ -88,10 +88,11 @@ jobs:
           VERSION="0.1.0.$BUILD"
           TAG="tv-v$VERSION"
           APK='tv/app/build/outputs/apk/release/app-release.apk'
+          cp "$APK" "$RUNNER_TEMP/EmberTV.apk"
           PREV="$(git tag --sort=-v:refname -l 'tv-v*' | head -1)"
           if [ -n "$PREV" ]; then git log "$PREV"..HEAD --pretty='* %s' --no-merges > "$RUNNER_TEMP/notes.txt"; else git log -20 --pretty='* %s' --no-merges > "$RUNNER_TEMP/notes.txt"; fi
           test -s "$RUNNER_TEMP/notes.txt" || printf 'Maintenance build %s\n' "$BUILD" > "$RUNNER_TEMP/notes.txt"
-          gh release create "$TAG" "$APK#EmberTV.apk" --title "EmberTV $VERSION" --notes-file "$RUNNER_TEMP/notes.txt"
+          gh release create "$TAG" "$RUNNER_TEMP/EmberTV.apk" --title "EmberTV $VERSION" --notes-file "$RUNNER_TEMP/notes.txt"
           python3 scripts/update_repo.py tv --version "$VERSION" --build "$BUILD" --url "https://github.com/${{ github.repository }}/releases/download/$TAG/EmberTV.apk" --artifact "$APK" --notes "$RUNNER_TEMP/notes.txt"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
