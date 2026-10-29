@@ -14,6 +14,16 @@
       "category": "utilities",
       "versions": [
         {
+          "version": "0.1.0.4",
+          "buildVersion": "4",
+          "date": "2026-10-29",
+          "localizedDescription": "* fix(ios-ci): autostash generated changes before catalog rebase\n* catalog: publish EmberTV 0.1.0.7",
+          "changelog": "* fix(ios-ci): autostash generated changes before catalog rebase\n* catalog: publish EmberTV 0.1.0.7",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/companion-v0.1.0.4/EmberTV-Companion.ipa",
+          "size": 175245,
+          "minOSVersion": "16.0"
+        },
+        {
           "version": "0.1.0.2",
           "buildVersion": "2",
           "date": "2026-10-29",
@@ -23,7 +33,9 @@
           "size": 130320,
           "minOSVersion": "16.0"
         }
-      ]
+      ],
+      "iconURL": "https://raw.githubusercontent.com/soum91/embertv/main/assets/embertv-icon.png"
     }
-  ]
+  ],
+  "iconURL": "https://raw.githubusercontent.com/soum91/embertv/main/assets/embertv-icon.png"
 }
