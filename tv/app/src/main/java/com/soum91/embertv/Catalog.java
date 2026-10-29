@@ -66,8 +66,8 @@ final class Catalog {
         return x;
     }
     static List<App> fetch(String source) throws Exception {
-        URL parsed = new URL(source);
-        if ("github.com".equalsIgnoreCase(parsed.getHost())) return githubReleases(parsed);
+        URL sourceURL = new URL(source);
+        if ("github.com".equalsIgnoreCase(sourceURL.getHost())) return githubReleases(sourceURL);
         String json;
         try { json = get(source); }
         catch (Exception first) {
