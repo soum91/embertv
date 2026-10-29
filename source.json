@@ -17,9 +17,19 @@
           "version": "0.1.0.4",
           "buildVersion": "4",
           "date": "2026-10-29",
-          "localizedDescription": "* fix(ios-ci): autostash generated changes before catalog rebase\n* catalog: publish EmberTV 0.1.0.7",
-          "changelog": "* fix(ios-ci): autostash generated changes before catalog rebase\n* catalog: publish EmberTV 0.1.0.7",
+          "localizedDescription": "* feat(icons): add the EmberSign-themed iPhone Home Screen icon and JSON catalog artwork\n* fix(ios-ci): autostash generated changes before catalog rebase\n* catalog: publish EmberTV 0.1.0.7",
+          "changelog": "* feat(icons): add the EmberSign-themed iPhone Home Screen icon and JSON catalog artwork\n* fix(ios-ci): autostash generated changes before catalog rebase\n* catalog: publish EmberTV 0.1.0.7",
           "downloadURL": "https://github.com/soum91/embertv/releases/download/companion-v0.1.0.4/EmberTV-Companion.ipa",
+          "size": 175245,
+          "minOSVersion": "16.0"
+        },
+        {
+          "version": "0.1.0.3",
+          "buildVersion": "3",
+          "date": "2026-10-29",
+          "localizedDescription": "* feat(icons): brand Android TV and iPhone apps; publish catalog artwork\n* fix(catalog): correct legacy v0.1.0.5 APK asset URL\n* catalog: publish EmberTV 0.1.0.6\n* fix(release): publish APK with exact EmberTV.apk filename for JSON feed\n* catalog: publish EmberTV 0.1.0.5\n* fix(ci): correct permanent signing certificate fingerprint assertion\n* ci(android): verify permanent APK signing certificate before publishing\n* feat(tv): add searchable icon cards and downloads status\n* catalog: publish Companion 0.1.0.2\n",
+          "changelog": "* feat(icons): brand Android TV and iPhone apps; publish catalog artwork\n* fix(catalog): correct legacy v0.1.0.5 APK asset URL\n* catalog: publish EmberTV 0.1.0.6\n* fix(release): publish APK with exact EmberTV.apk filename for JSON feed\n* catalog: publish EmberTV 0.1.0.5\n* fix(ci): correct permanent signing certificate fingerprint assertion\n* ci(android): verify permanent APK signing certificate before publishing\n* feat(tv): add searchable icon cards and downloads status\n* catalog: publish Companion 0.1.0.2\n",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/companion-v0.1.0.3/EmberTV-Companion.ipa",
           "size": 175245,
           "minOSVersion": "16.0"
         },
