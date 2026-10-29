@@ -14,6 +14,16 @@
       "category": "utilities",
       "versions": [
         {
+          "version": "0.1.0.7",
+          "buildVersion": "7",
+          "date": "2026-10-29",
+          "localizedDescription": "* fix(ios): retain launch-screen and local-network plist keys to eliminate letterboxing\n* catalog: publish EmberTV 0.1.0.10\n* fix(android): avoid local variable shadowing in GitHub catalog parser\n* catalog: publish Companion 0.1.0.6",
+          "changelog": "* fix(ios): retain launch-screen and local-network plist keys to eliminate letterboxing\n* catalog: publish EmberTV 0.1.0.10\n* fix(android): avoid local variable shadowing in GitHub catalog parser\n* catalog: publish Companion 0.1.0.6",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/companion-v0.1.0.7/EmberTV-Companion.ipa",
+          "size": 306778,
+          "minOSVersion": "16.0"
+        },
+        {
           "version": "0.1.0.6",
           "buildVersion": "6",
           "date": "2026-10-29",
