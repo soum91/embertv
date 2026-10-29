@@ -7,7 +7,8 @@ An Android TV APK catalog and installer with an iOS companion. EmberTV reads pub
 ## TV features
 
 - Remote-friendly navigation: Discover, Installed, Sources, Pair iPhone, and About.
-- Multiple persistent JSON catalogs. Paste a direct `https://...json` URL or a public GitHub repository URL. For GitHub repositories EmberTV discovers `repo.json`, `source.json`, `apps.json`, and `app-repo.json` on the default branch.
+- Multiple persistent sources. Paste a direct HTTPS JSON catalog URL or a public GitHub repository URL. GitHub repositories without a JSON feed are browsed through their published `.apk` release assets, with SHA-256 digests when GitHub provides them.
+- Built-in EmberTV JSON catalog and Reynard TV GitHub APK releases; future Reynard releases are detected without manually updating a JSON version.
 - Both EmberTV catalogs and AltStore-style `apps[].versions[]` entries with APK `downloadURL` links. iOS-only IPA entries are ignored.
 - Installed version comparisons using Android `versionCode` and public signing certificates. A mismatch stops before installation and does not remove app data.
 - HTTPS download, optional SHA-256 verification, Android PackageInstaller, and explicit TV confirmation.
@@ -15,7 +16,7 @@ An Android TV APK catalog and installer with an iOS companion. EmberTV reads pub
 
 ## iPhone companion
 
-The iOS 16+ companion browses the same JSON catalog, pairs with the TV via its IP address and the code shown on the Pair screen, and asks the TV to download and install selected apps. It also sends a local `.apk` through the Files picker. Both devices must be on the same trusted LAN, and EmberTV must be open on the TV to receive commands. This initial companion uses a pairing token over local HTTP and should **not** be exposed to the public internet.
+The iOS 16+ companion browses JSON and public GitHub APK release sources, pairs with the TV via its IP address and the code shown on the Pair screen, and asks the TV to download and install selected apps. It also sends a local `.apk` through the Files picker. Both devices must be on the same trusted LAN, and EmberTV must be open on the TV to receive commands. This initial companion uses a pairing token over local HTTP and should **not** be exposed to the public internet.
 
 ## JSON format
 
@@ -37,4 +38,4 @@ iOS: `cd companion && xcodegen generate && xcodebuild -project EmberTVCompanion.
 
 ## Security and limits
 
-EmberTV deliberately does not silently install, bypass Android's unknown-source permission, access private GitHub assets, or replace an app with an incompatible certificate. APK and source URLs must use HTTPS. Only pair on a private Wi-Fi network; remote install is disabled after EmberTV exits. APK SHA-256 hashes are strongly recommended for catalog publishers. Split `.apks`/`.apkm` archives are not yet supported.
+EmberTV deliberately does not silently install, bypass Android's unknown-source permission, access private GitHub assets, or replace an app with an incompatible certificate. APK and source URLs must use HTTPS. GitHub's release API requires authentication for private APKs, so private projects such as Amazon Music TV Plus are not published in the public EmberTV feed. Projects without a downloadable APK release, such as WarpTVPort or the current Timbre repository, cannot be installed from their repository alone. Only pair on a private Wi-Fi network; remote install is disabled after EmberTV exits. APK SHA-256 hashes are strongly recommended for catalog publishers. Split `.apks`/`.apkm` archives are not yet supported.

@@ -6,6 +6,7 @@ struct ContentView: View {
     @State private var selectedTab = 0
     @State private var chooseAPK = false
     @State private var showDetails: TVApp?
+    @FocusState private var sourceFieldFocused: Bool
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -15,6 +16,7 @@ struct ContentView: View {
             sources.tabItem { Label("Sources", systemImage: "tray.full.fill") }.tag(3)
         }
         .preferredColorScheme(.dark)
+        .onChange(of: selectedTab) { _ in sourceFieldFocused = false }
         .fileImporter(isPresented: $chooseAPK, allowedContentTypes: [UTType(filenameExtension: "apk") ?? .data]) { result in
             switch result {
             case .success(let url): Task { await model.upload(file: url) }
@@ -26,7 +28,7 @@ struct ContentView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 22) {
                         Text(app.summary).foregroundStyle(.secondary)
-                        LabeledContent("Package ID", value: app.id)
+                        LabeledContent("Package ID", value: app.packageName.isEmpty ? "Verified on TV" : app.packageName)
                         LabeledContent("Version", value: app.version)
                         Text("Changelog").font(.headline)
                         Text(app.changelog.isEmpty ? "No changelog provided" : app.changelog)
@@ -40,7 +42,17 @@ struct ContentView: View {
         }
     }
     private var browse: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
+            HStack {
+                Text("EmberTV").font(.system(size: 32, weight: .bold))
+                Spacer()
+                Button { Task { await model.refresh() } } label: {
+                    Image(systemName: "arrow.clockwise").font(.title3).foregroundStyle(.orange)
+                }
+                .disabled(model.isWorking)
+                .accessibilityLabel("Refresh app catalog")
+            }
+            .padding(.horizontal, 22).padding(.top, 12).padding(.bottom, 8)
             List {
                 statusRow
                 ForEach(model.apps) { app in
@@ -70,28 +82,30 @@ struct ContentView: View {
                     VStack(spacing: 12) {
                         Image(systemName: "square.stack.3d.down.right").font(.largeTitle).foregroundStyle(.orange)
                         Text("No Android APKs").font(.headline)
-                        Text("Add a public GitHub JSON source, then refresh.").font(.footnote).foregroundStyle(.secondary)
+                        Text("Add a public GitHub repository or JSON source, then refresh.").font(.footnote).foregroundStyle(.secondary)
                     }.frame(maxWidth: .infinity).padding(30)
                 }
             }
-            .navigationTitle("EmberTV")
-            .toolbar { Button { Task { await model.refresh() } } label: { Image(systemName: "arrow.clockwise") }.disabled(model.isWorking) }
+            .safeAreaInset(edge: .bottom, spacing: 0) { scrollClearance }
             .task { if model.apps.isEmpty { await model.refresh() } }
         }
     }
     private var transfer: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
+            pageHeader("Send APK")
             Form {
                 Section("From iPhone Files") {
                     Button { chooseAPK = true } label: { Label("Choose an APK to send", systemImage: "folder") }
                     Text("The TV receives the file, checks its signing certificate, and opens Android's installer. Keep both apps open until the transfer finishes.").font(.footnote).foregroundStyle(.secondary)
                 }
                 statusRow
-            }.navigationTitle("Send APK")
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) { scrollClearance }
         }
     }
     private var pairing: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
+            pageHeader("Connect")
             Form {
                 Section("Android TV") {
                     TextField("TV IP address", text: $model.tvAddress).keyboardType(.numbersAndPunctuation).textInputAutocapitalization(.never).autocorrectionDisabled()
@@ -106,23 +120,44 @@ struct ContentView: View {
                     Text("4. Browse an APK or send a file, then approve installation on the TV.")
                 }
                 statusRow
-            }.navigationTitle("Connect")
+            }
+            .scrollDismissesKeyboard(.interactively)
+            .safeAreaInset(edge: .bottom, spacing: 0) { scrollClearance }
         }
     }
     private var sources: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
+            pageHeader("Sources")
             Form {
-                Section("Add GitHub JSON catalog") {
-                    TextField("GitHub repo or JSON URL", text: $model.newSource).textInputAutocapitalization(.never).autocorrectionDisabled().keyboardType(.URL)
-                    Button("Add source") { model.addSource() }
+                Section("Add GitHub APK repo or JSON catalog") {
+                    TextField("GitHub repo or JSON URL", text: $model.newSource)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .keyboardType(.URL)
+                        .focused($sourceFieldFocused)
+                        .submitLabel(.done)
+                        .onSubmit { sourceFieldFocused = false }
+                    Button("Add source") { sourceFieldFocused = false; model.addSource() }
                 }
                 Section("Saved sources") {
                     ForEach(model.sources, id: \.self) { source in Text(source).font(.footnote).textSelection(.enabled) }
                         .onDelete { index in index.map { model.sources[$0] }.forEach { model.removeSource($0) } }
                 }
                 statusRow
-            }.navigationTitle("Sources")
+            }
+            .scrollDismissesKeyboard(.interactively)
+            .safeAreaInset(edge: .bottom, spacing: 0) { scrollClearance }
         }
+    }
+    private func pageHeader(_ title: String) -> some View {
+        HStack {
+            Text(title).font(.system(size: 32, weight: .bold))
+            Spacer()
+        }
+        .padding(.horizontal, 22).padding(.top, 12).padding(.bottom, 8)
+    }
+    private var scrollClearance: some View {
+        Color.clear.frame(height: 88).accessibilityHidden(true)
     }
     private var statusRow: some View {
         Section("Status") {

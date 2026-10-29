@@ -3,6 +3,7 @@ import Security
 
 struct TVApp: Identifiable {
     let id: String
+    let packageName: String
     let name: String
     let iconURL: String
     let summary: String
@@ -17,7 +18,19 @@ struct TVApp: Identifiable {
     @Published var code = ""
     @Published var status = "Pair with EmberTV on your local Wi-Fi"
     @Published var apps: [TVApp] = []
-    @Published var sources: [String] = UserDefaults.standard.stringArray(forKey: "sources") ?? ["https://raw.githubusercontent.com/soum91/embertv/main/repo.json"]
+    @Published var sources: [String] = {
+        let defaults = UserDefaults.standard
+        var saved = defaults.stringArray(forKey: "sources") ?? ["https://raw.githubusercontent.com/soum91/embertv/main/repo.json"]
+        // One-time migration: preserve existing user sources and add the verified
+        // public Reynard Android TV APK release repository.
+        if !defaults.bool(forKey: "emberTVSeededReynardSource") {
+            let reynard = "https://github.com/soum91/reynard-browser"
+            if !saved.contains(reynard) { saved.append(reynard) }
+            defaults.set(saved, forKey: "sources")
+            defaults.set(true, forKey: "emberTVSeededReynardSource")
+        }
+        return saved
+    }()
     @Published var newSource = ""
     @Published var isWorking = false
 
@@ -65,8 +78,9 @@ struct TVApp: Identifiable {
                         return (name, url, hash, changelog, code)
                     }
                     guard let version = matching.max(by: { $0.4 < $1.4 || ($0.4 == $1.4 && $0.0.compare($1.0, options: .numeric) == .orderedAscending) }) else { continue }
-                    let id = (app["packageName"] ?? app["bundleIdentifier"]) as? String ?? version.1
-                    let entry = TVApp(id: id, name: app["name"] as? String ?? "Unnamed", iconURL: app["iconURL"] as? String ?? "", summary: (app["subtitle"] ?? app["localizedDescription"]) as? String ?? "", version: version.0, downloadURL: version.1, sha256: version.2, changelog: version.3)
+                    let packageName = (app["packageName"] ?? app["bundleIdentifier"]) as? String ?? ""
+                    let id = packageName.isEmpty ? version.1 : packageName
+                    let entry = TVApp(id: id, packageName: packageName, name: app["name"] as? String ?? "Unnamed", iconURL: app["iconURL"] as? String ?? "", summary: (app["subtitle"] ?? app["localizedDescription"]) as? String ?? "", version: version.0, downloadURL: version.1, sha256: version.2, changelog: version.3)
                     found[id] = entry
                 }
             } catch { errors += 1 }
@@ -79,7 +93,7 @@ struct TVApp: Identifiable {
         guard input.hasPrefix("https://") else { status = "Source must use HTTPS"; return }
         if let url = URL(string: input), url.host == "github.com" {
             let components = url.pathComponents.filter { $0 != "/" }
-            if components.count >= 2 { input = "https://raw.githubusercontent.com/\(components[0])/\(components[1])/main/repo.json" }
+            if components.count >= 2 { input = "https://github.com/\(components[0])/\(components[1])" }
         }
         if !sources.contains(input) { sources.append(input); UserDefaults.standard.set(sources, forKey: "sources") }
         newSource = ""
@@ -93,7 +107,7 @@ struct TVApp: Identifiable {
         guard let base else { status = "Set TV address and pair first"; return }
         isWorking = true; defer { isWorking = false }
         do {
-            _ = try await request(base.appendingPathComponent("install"), json: ["url": app.downloadURL, "packageName": app.id, "sha256": app.sha256], authenticated: true)
+            _ = try await request(base.appendingPathComponent("install"), json: ["url": app.downloadURL, "packageName": app.packageName, "sha256": app.sha256], authenticated: true)
             status = "Sent \(app.name) to TV. Confirm installation on TV."
         } catch { status = "Install request failed: \(error.localizedDescription)" }
     }
@@ -134,6 +148,11 @@ struct TVApp: Identifiable {
     }
     private func fetchSource(_ source: String) async throws -> Data {
         guard let url = URL(string: source), url.scheme == "https" else { throw TVError.invalidResponse }
+        if url.host?.lowercased() == "github.com" {
+            let components = url.pathComponents.filter { $0 != "/" }
+            guard components.count >= 2 else { throw TVError.invalidResponse }
+            return try await fetchGitHubReleases(owner: components[0], repo: components[1])
+        }
         let paths = source.hasSuffix("/repo.json") ? [source, source.replacingOccurrences(of: "repo.json", with: "source.json"), source.replacingOccurrences(of: "repo.json", with: "apps.json"), source.replacingOccurrences(of: "repo.json", with: "app-repo.json")] : [source]
         for candidate in paths {
             guard let u = URL(string: candidate) else { continue }
@@ -143,6 +162,53 @@ struct TVApp: Identifiable {
             } catch { continue }
         }
         throw TVError.server("No valid JSON at \(source)")
+    }
+    private func fetchGitHubReleases(owner: String, repo: String) async throws -> Data {
+        guard owner.range(of: #"^[A-Za-z0-9_.-]+$"#, options: .regularExpression) != nil,
+              repo.range(of: #"^[A-Za-z0-9_.-]+$"#, options: .regularExpression) != nil,
+              let url = URL(string: "https://api.github.com/repos/\(owner)/\(repo)/releases?per_page=50")
+        else { throw TVError.invalidResponse }
+        var request = URLRequest(url: url)
+        request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+            throw TVError.server("GitHub release list unavailable for \(owner)/\(repo) (private repositories require authorization)")
+        }
+        guard let releases = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { throw TVError.invalidResponse }
+        var versions: [[String: Any]] = []
+        for release in releases where !(release["draft"] as? Bool ?? false) {
+            let tag = release["tag_name"] as? String ?? "latest"
+            let changelog = release["body"] as? String ?? ""
+            for asset in release["assets"] as? [[String: Any]] ?? [] {
+                let filename = asset["name"] as? String ?? ""
+                let downloadURL = asset["browser_download_url"] as? String ?? ""
+                guard filename.lowercased().hasSuffix(".apk"), downloadURL.hasPrefix("https://github.com/") else { continue }
+                let build = githubBuildNumber(filename: filename, tag: tag)
+                let versionPattern = #"\d+\.\d+(?:\.\d+)+"#
+                let version = filename.range(of: versionPattern, options: .regularExpression).map { String(filename[$0]) } ?? tag
+                let digest = asset["digest"] as? String ?? ""
+                versions.append(["version": "\(version) (build \(build))", "versionCode": build,
+                                 "downloadURL": downloadURL, "sha256": digest.hasPrefix("sha256:") ? String(digest.dropFirst(7)) : "",
+                                 "changelog": changelog])
+            }
+        }
+        guard !versions.isEmpty else { throw TVError.server("No public APK release assets in \(owner)/\(repo)") }
+        var app: [String: Any] = ["name": repo == "reynard-browser" ? "Reynard TV" : repo,
+                                  "subtitle": "GitHub APK releases from \(owner)/\(repo)", "versions": versions]
+        if owner == "soum91" && repo == "reynard-browser" {
+            app["packageName"] = "com.soum91.reynardtv"
+            app["iconURL"] = "https://raw.githubusercontent.com/soum91/reynard-browser/android-tv/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
+        }
+        return try JSONSerialization.data(withJSONObject: ["apps": [app]])
+    }
+    private func githubBuildNumber(filename: String, tag: String) -> Int64 {
+        let pattern = #"(?:build[-_.]|tv[.])(\d+)"#
+        for value in [filename, tag] {
+            if let match = value.range(of: pattern, options: [.regularExpression, .caseInsensitive]),
+               let number = value[match].split(whereSeparator: { !$0.isNumber }).last,
+               let build = Int64(number) { return build }
+        }
+        return 0
     }
 }
 

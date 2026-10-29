@@ -12,9 +12,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 final class Catalog {
     static final String DEFAULT = "https://raw.githubusercontent.com/soum91/embertv/main/repo.json";
+    static final String REYNARD = "https://github.com/soum91/reynard-browser";
     static final String[] NAMES = {"repo.json", "source.json", "apps.json", "app-repo.json", "AltStore.json"};
 
     static final class Version {
@@ -32,6 +35,7 @@ final class Catalog {
         String stored = p.getString("urls", "");
         LinkedHashSet<String> result = new LinkedHashSet<>();
         result.add(DEFAULT);
+        result.add(REYNARD);
         if (!stored.isEmpty()) for (String x : stored.split("\\n")) if (!x.trim().isEmpty()) result.add(x.trim());
         return new ArrayList<>(result);
     }
@@ -56,12 +60,14 @@ final class Catalog {
             URL u = new URL(x);
             if ("github.com".equalsIgnoreCase(u.getHost())) {
                 String[] p = u.getPath().split("/");
-                if (p.length >= 3) return "https://raw.githubusercontent.com/" + p[1] + "/" + p[2] + "/main/repo.json";
+                if (p.length >= 3) return "https://github.com/" + p[1] + "/" + p[2];
             }
         } catch (Exception ignored) { }
         return x;
     }
     static List<App> fetch(String source) throws Exception {
+        URL parsed = new URL(source);
+        if ("github.com".equalsIgnoreCase(parsed.getHost())) return githubReleases(parsed);
         String json;
         try { json = get(source); }
         catch (Exception first) {
@@ -100,6 +106,53 @@ final class Catalog {
             if (app.latest != null) result.add(app);
         }
         return result;
+    }
+    private static List<App> githubReleases(URL github) throws Exception {
+        String[] parts = github.getPath().split("/");
+        if (parts.length < 3 || !parts[1].matches("[A-Za-z0-9_.-]+") || !parts[2].matches("[A-Za-z0-9_.-]+"))
+            throw new IllegalArgumentException("Expected a GitHub owner/repository URL");
+        String owner = parts[1], repo = parts[2];
+        JSONArray releases = new JSONArray(get("https://api.github.com/repos/" + owner + "/" + repo + "/releases?per_page=50"));
+        App app = new App();
+        app.name = repo.equalsIgnoreCase("reynard-browser") ? "Reynard TV" : repo;
+        app.packageName = repo.equalsIgnoreCase("reynard-browser") ? "com.soum91.reynardtv" : "";
+        app.summary = "GitHub APK releases from " + owner + "/" + repo;
+        app.icon = repo.equalsIgnoreCase("reynard-browser")
+                ? "https://raw.githubusercontent.com/soum91/reynard-browser/android-tv/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" : "";
+        for (int i = 0; i < releases.length(); i++) {
+            JSONObject release = releases.optJSONObject(i);
+            if (release == null || release.optBoolean("draft", false)) continue;
+            JSONArray assets = release.optJSONArray("assets");
+            if (assets == null) continue;
+            for (int a = 0; a < assets.length(); a++) {
+                JSONObject asset = assets.optJSONObject(a);
+                if (asset == null) continue;
+                String filename = asset.optString("name", "");
+                String url = asset.optString("browser_download_url", "");
+                if (!filename.toLowerCase(java.util.Locale.ROOT).endsWith(".apk") || !url.startsWith("https://github.com/")) continue;
+                Version v = new Version();
+                v.url = url;
+                v.code = buildNumber(filename, release.optString("tag_name", ""));
+                Matcher ver = Pattern.compile("(\\d+\\.\\d+(?:\\.\\d+)+)").matcher(filename);
+                v.name = ver.find() ? ver.group(1) + " (build " + v.code + ")" : release.optString("tag_name", "latest");
+                String digest = asset.optString("digest", "");
+                v.sha256 = digest.startsWith("sha256:") ? digest.substring(7) : "";
+                v.changelog = release.optString("body", "");
+                if (app.latest == null || v.code > app.latest.code) app.latest = v;
+            }
+        }
+        if (app.latest == null) throw new IllegalArgumentException("No public APK release assets in " + owner + "/" + repo);
+        List<App> out = new ArrayList<>();
+        out.add(app);
+        return out;
+    }
+    private static long buildNumber(String filename, String tag) {
+        Matcher m = Pattern.compile("(?:build[-_.]|tv[.]|[-_.])(\\d+)(?:[-_.][^\\d]|\\.apk|$)", Pattern.CASE_INSENSITIVE).matcher(filename);
+        long best = 0;
+        while (m.find()) try { best = Math.max(best, Long.parseLong(m.group(1))); } catch (NumberFormatException ignored) { }
+        if (best != 0) return best;
+        Matcher t = Pattern.compile("(?:build[-_.]|tv[.])(\\d+)$", Pattern.CASE_INSENSITIVE).matcher(tag);
+        return t.find() ? Long.parseLong(t.group(1)) : 0;
     }
     private static Version parse(JSONObject v) {
         String url = v.optString("downloadURL", v.optString("apkURL", ""));

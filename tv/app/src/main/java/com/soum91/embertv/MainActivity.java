@@ -217,8 +217,9 @@ public final class MainActivity extends Activity {
             Map<String, Catalog.App> combined = new LinkedHashMap<>(); List<String> errors = new ArrayList<>();
             for (String url : Catalog.sources(this)) {
                 try { for (Catalog.App a : Catalog.fetch(url)) {
-                    Catalog.App old = combined.get(a.packageName);
-                    if (old == null || a.latest.code > old.latest.code) combined.put(a.packageName, a);
+                    String key = a.packageName.isEmpty() ? a.latest.url : a.packageName;
+                    Catalog.App old = combined.get(key);
+                    if (old == null || a.latest.code > old.latest.code) combined.put(key, a);
                 }} catch (Exception e) { errors.add(url + ": " + e.getMessage()); }
             }
             runOnUiThread(() -> {
@@ -240,7 +241,7 @@ public final class MainActivity extends Activity {
                     }).show();
         });
         for (String source : Catalog.sources(this)) {
-            if (source.equals(Catalog.DEFAULT)) { paragraph("Built in: " + source); continue; }
+            if (source.equals(Catalog.DEFAULT) || source.equals(Catalog.REYNARD)) { paragraph("Built in: " + source); continue; }
             action(source + "   ✕", () -> new AlertDialog.Builder(this).setTitle("Remove source?")
                     .setMessage(source).setNegativeButton("Cancel", null)
                     .setPositiveButton("Remove", (d, w) -> { Catalog.remove(this, source); show("Sources"); refresh(); }).show());
