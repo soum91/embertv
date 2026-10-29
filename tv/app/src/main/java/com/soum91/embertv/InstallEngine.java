@@ -105,18 +105,25 @@ final class InstallEngine {
         params.setAppPackageName(candidate.packageName);
         params.setSize(file.length());
         int sessionId = installer.createSession(params);
-        try (PackageInstaller.Session session = installer.openSession(sessionId);
-             FileInputStream in = new FileInputStream(file);
-             OutputStream out = session.openWrite("base.apk", 0, file.length())) {
-            byte[] buf = new byte[65536]; int n;
-            while ((n = in.read(buf)) != -1) out.write(buf, 0, n);
-            session.fsync(out);
+        try (PackageInstaller.Session session = installer.openSession(sessionId)) {
+            // PackageInstaller rejects commit() with "Files still open" if any
+            // write stream remains open, even after fsync(). Finish and close
+            // the entire APK write before submitting the session.
+            try (FileInputStream in = new FileInputStream(file);
+                 OutputStream out = session.openWrite("base.apk", 0, file.length())) {
+                byte[] buf = new byte[65536]; int n;
+                while ((n = in.read(buf)) != -1) out.write(buf, 0, n);
+                session.fsync(out);
+            }
             Intent result = new Intent(activity, InstallReceiver.class);
             result.setAction("com.soum91.embertv.INSTALL_RESULT");
             PendingIntent pi = PendingIntent.getBroadcast(activity, sessionId, result, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
             session.commit(pi.getIntentSender());
             status("Installation submitted. Confirm on the TV when prompted.");
-        } catch (Exception e) { installer.abandonSession(sessionId); throw e; }
+        } catch (Exception e) {
+            try { installer.abandonSession(sessionId); } catch (Exception ignored) { }
+            throw e;
+        }
     }
     static boolean compatible(SigningInfo oldInfo, SigningInfo newInfo) throws Exception {
         Set<String> oldCurrent = signers(oldInfo);
