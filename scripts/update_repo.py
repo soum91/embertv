@@ -19,6 +19,8 @@ def main():
     path = Path("repo.json" if args.platform == "tv" else "source.json")
     with path.open(encoding="utf-8") as f:
         feed = json.load(f)
+    icon_url = "https://raw.githubusercontent.com/soum91/embertv/main/assets/embertv-icon.png"
+    feed["iconURL"] = icon_url
     notes = args.notes.read_text(encoding="utf-8").strip() or "Maintenance release"
     item = {
         "version": args.version,
@@ -57,6 +59,7 @@ def main():
         if existing.get(key) == base[key]:
             base = existing
             break
+    base["iconURL"] = icon_url
     old_versions = [v for v in base.get("versions", []) if v.get("version") != args.version]
     base["versions"] = [item] + old_versions[:29]
     feed["apps"] = [base] + [a for a in feed["apps"] if a.get("packageName" if args.platform == "tv" else "bundleIdentifier") != base["packageName" if args.platform == "tv" else "bundleIdentifier"]]

@@ -4,6 +4,7 @@ import Security
 struct TVApp: Identifiable {
     let id: String
     let name: String
+    let iconURL: String
     let summary: String
     let version: String
     let downloadURL: String
@@ -65,7 +66,7 @@ struct TVApp: Identifiable {
                     }
                     guard let version = matching.max(by: { $0.4 < $1.4 || ($0.4 == $1.4 && $0.0.compare($1.0, options: .numeric) == .orderedAscending) }) else { continue }
                     let id = (app["packageName"] ?? app["bundleIdentifier"]) as? String ?? version.1
-                    let entry = TVApp(id: id, name: app["name"] as? String ?? "Unnamed", summary: (app["subtitle"] ?? app["localizedDescription"]) as? String ?? "", version: version.0, downloadURL: version.1, sha256: version.2, changelog: version.3)
+                    let entry = TVApp(id: id, name: app["name"] as? String ?? "Unnamed", iconURL: app["iconURL"] as? String ?? "", summary: (app["subtitle"] ?? app["localizedDescription"]) as? String ?? "", version: version.0, downloadURL: version.1, sha256: version.2, changelog: version.3)
                     found[id] = entry
                 }
             } catch { errors += 1 }

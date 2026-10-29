@@ -46,7 +46,17 @@ struct ContentView: View {
                 ForEach(model.apps) { app in
                     Button { showDetails = app } label: {
                         HStack(spacing: 14) {
-                            Image(systemName: "square.stack.3d.up.fill").font(.title2).foregroundStyle(.orange).frame(width: 45, height: 45).background(.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 11))
+                            AsyncImage(url: URL(string: app.iconURL)) { phase in
+                                if let image = phase.image {
+                                    image.resizable().scaledToFit()
+                                } else {
+                                    Image(systemName: "square.stack.3d.up.fill")
+                                        .resizable().scaledToFit().padding(10).foregroundStyle(.orange)
+                                }
+                            }
+                            .frame(width: 45, height: 45)
+                            .background(.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 11))
+                            .clipShape(RoundedRectangle(cornerRadius: 11))
                             VStack(alignment: .leading) {
                                 Text(app.name).font(.headline)
                                 Text("v\(app.version) • \(app.summary)").font(.footnote).foregroundStyle(.secondary).lineLimit(2)

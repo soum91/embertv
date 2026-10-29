@@ -86,8 +86,15 @@ public final class MainActivity extends Activity {
         setContentView(main);
         sidebar = new LinearLayout(this); sidebar.setOrientation(LinearLayout.VERTICAL); sidebar.setPadding(0, 0, dp(24), 0);
         main.addView(sidebar, new LinearLayout.LayoutParams(dp(235), -1));
-        TextView logo = label("◆  EmberTV", 28, ORANGE, true);
-        sidebar.addView(logo, new LinearLayout.LayoutParams(-1, dp(74)));
+        LinearLayout branding = new LinearLayout(this);
+        branding.setGravity(Gravity.CENTER_VERTICAL);
+        ImageView brandIcon = new ImageView(this);
+        brandIcon.setImageResource(R.drawable.embertv_icon);
+        brandIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        branding.addView(brandIcon, new LinearLayout.LayoutParams(dp(52), dp(52)));
+        TextView logo = label("EmberTV", 28, ORANGE, true);
+        branding.addView(logo, new LinearLayout.LayoutParams(-1, dp(70)));
+        sidebar.addView(branding, new LinearLayout.LayoutParams(-1, dp(74)));
         for (String menu : new String[]{"Discover", "Installed", "Downloads", "Sources", "Pair iPhone", "About"}) {
             Button b = button(menu, () -> show(menu));
             LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(-1, dp(60)); p.bottomMargin = dp(9); sidebar.addView(b, p);
