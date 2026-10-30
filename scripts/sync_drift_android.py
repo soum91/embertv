@@ -11,8 +11,10 @@ import urllib.request
 from pathlib import Path
 
 
-DRIFT_RELEASES = "https://api.github.com/repos/soum91/drift/releases?per_page=100"
-DRIFT_CERT_SHA256 = "80449c61bd0ecef4560eef65a575111e1884a465fb443859bba64cbf9943d022"
+DRIFT_RELEASES = "https://api.github.com/repos/soum91/embertv/releases?per_page=100"
+# Drift v0.1.1+ is signed by the existing, permanent EmberTV release key.
+# Legacy Drift build 2 used a different certificate and needs one uninstall.
+DRIFT_CERT_SHA256 = "bc429067869a9bf11f16233dd29c54fe443290c4a76652a1d7ed1b2f3a15dfd2"
 DRIFT_PACKAGE = "dev.soum91.drift"
 TAG_PATTERN = re.compile(r"^android-v(\d+\.\d+\.\d+)\.(\d+)$")
 APK_ASSET = "Drift-AndroidTV.apk"
@@ -38,7 +40,7 @@ def validate_apk(apk_path, expected_build):
     signature = run_tool([str(sdk / "apksigner"), "verify", "--verbose", "--print-certs", str(apk_path)])
     fingerprints = re.findall(r"Signer #\d+ certificate SHA-256 digest:\s*([0-9A-Fa-f]+)", signature)
     if [value.lower() for value in fingerprints] != [DRIFT_CERT_SHA256]:
-        raise RuntimeError("Drift release certificate does not match the original signed build 2")
+        raise RuntimeError("Drift release certificate does not match the permanent EmberTV signing key")
     manifest = run_tool([str(sdk / "aapt2"), "dump", "badging", str(apk_path)])
     package = re.search(r"package:\s+name='([^']+)'\s+versionCode='(\d+)'", manifest)
     if not package or package.group(1) != DRIFT_PACKAGE or int(package.group(2)) != expected_build:
@@ -57,7 +59,7 @@ def main():
             candidates.append((int(match.group(2)), match.group(1), release, assets[0]))
 
     if not candidates:
-        print("No signed Drift Android TV GitHub Release yet; EmberTV catalog unchanged.")
+        print("No EmberTV-signed Drift Android TV GitHub Release yet; catalog unchanged.")
         return
 
     build, base_version, release, asset = max(candidates, key=lambda row: row[0])

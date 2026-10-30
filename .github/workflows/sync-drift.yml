@@ -1,4 +1,4 @@
-name: Sync verified Drift Android TV releases
+name: Build signed Drift Android TV and sync catalog
 
 on:
   workflow_dispatch:
@@ -20,19 +20,111 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    env:
+      HAS_SIGNING: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check out the latest Drift Android TV source
+        uses: actions/checkout@v4
+        with:
+          repository: soum91/drift
+          ref: main
+          path: drift-source
+          fetch-depth: 0
+          persist-credentials: false
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-      - name: Install Android signing verification tools
+      - name: Install Android compilation and signing tools
         run: |
           set -euo pipefail
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -1)"
           test -x "$SDKMANAGER"
           yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER" 'build-tools;35.0.0'
+          "$SDKMANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Check whether this Drift source already has a signed release
+        id: drift_version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Git commit count rises when Drift source changes and is independent of this repo's runs.
+          BUILD="$(git -C drift-source rev-list --count HEAD)"
+          test "$BUILD" -gt 2
+          TAG="android-v0.1.1.$BUILD"
+          echo "build=$BUILD" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo 'publish=false' >> "$GITHUB_OUTPUT"
+            echo "Drift $TAG already signed and released; checking catalog only."
+          else
+            echo 'publish=true' >> "$GITHUB_OUTPUT"
+            echo "Drift $TAG needs a signed release."
+          fi
+      - name: Require existing permanent EmberTV signing key
+        if: steps.drift_version.outputs.publish == 'true'
+        run: |
+          if [ "$HAS_SIGNING" != 'true' ]; then
+            echo 'Missing ANDROID_KEYSTORE_BASE64. Refusing to publish a differently signed Drift APK.' >&2
+            exit 1
+          fi
+      - name: Build Drift with EmberTV's existing permanent signing key
+        if: steps.drift_version.outputs.publish == 'true'
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          DRIFT_BUILD_NUMBER: ${{ steps.drift_version.outputs.build }}
+        run: |
+          set -euo pipefail
+          test -n "$ANDROID_KEYSTORE_BASE64"
+          test -n "$ANDROID_KEYSTORE_PASSWORD"
+          test -n "$ANDROID_KEY_ALIAS"
+          test -n "$ANDROID_KEY_PASSWORD"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/embertv-signing.jks"
+          printf '%s' "$ANDROID_KEYSTORE_PASSWORD" > "$RUNNER_TEMP/drift-storepass"
+          printf '%s' "$ANDROID_KEY_PASSWORD" > "$RUNNER_TEMP/drift-keypass"
+          export DRIFT_KEYSTORE="$RUNNER_TEMP/embertv-signing.jks"
+          export DRIFT_STOREPASS_FILE="$RUNNER_TEMP/drift-storepass"
+          export DRIFT_KEYPASS_FILE="$RUNNER_TEMP/drift-keypass"
+          export DRIFT_KEY_ALIAS="$ANDROID_KEY_ALIAS"
+          (cd drift-source && bash build.sh)
+      - name: Verify signed Drift package, build number and permanent certificate
+        if: steps.drift_version.outputs.publish == 'true'
+        env:
+          DRIFT_BUILD_NUMBER: ${{ steps.drift_version.outputs.build }}
+        run: |
+          set -euo pipefail
+          APK="drift-source/out/Drift-0.1.1-build-$DRIFT_BUILD_NUMBER.apk"
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK" > "$RUNNER_TEMP/drift-signature.txt"
+          grep -i -F 'bc429067869a9bf11f16233dd29c54fe443290c4a76652a1d7ed1b2f3a15dfd2' "$RUNNER_TEMP/drift-signature.txt"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt2" dump badging "$APK" > "$RUNNER_TEMP/drift-package.txt"
+          grep -F "package: name='dev.soum91.drift' versionCode='$DRIFT_BUILD_NUMBER'" "$RUNNER_TEMP/drift-package.txt"
+      - name: Upload signed Drift APK to Actions artifacts
+        if: steps.drift_version.outputs.publish == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Drift-AndroidTV-signed-${{ steps.drift_version.outputs.build }}
+          path: drift-source/out/Drift-0.1.1-build-${{ steps.drift_version.outputs.build }}.apk
+      - name: Publish signed Drift Android TV APK from EmberTV
+        if: steps.drift_version.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DRIFT_TAG: ${{ steps.drift_version.outputs.tag }}
+          DRIFT_BUILD_NUMBER: ${{ steps.drift_version.outputs.build }}
+        run: |
+          set -euo pipefail
+          cp "drift-source/out/Drift-0.1.1-build-$DRIFT_BUILD_NUMBER.apk" "$RUNNER_TEMP/Drift-AndroidTV.apk"
+          SOURCE_SHA="$(git -C drift-source rev-parse HEAD)"
+          gh release create "$DRIFT_TAG" "$RUNNER_TEMP/Drift-AndroidTV.apk" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Drift Android TV 0.1.1.$DRIFT_BUILD_NUMBER" \
+            --notes "Built from soum91/drift commit $SOURCE_SHA. Signed with the permanent EmberTV Android signing certificate. Uninstall legacy Drift build 2 once before installing this release; later releases can update in place."
       - name: Verify signed Drift APK and update catalog
         env:
           GITHUB_TOKEN: ${{ github.token }}
