@@ -1,6 +1,7 @@
 package com.soum91.embertv;
 
-import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -8,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Inet4Address;
+import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -21,34 +23,71 @@ import java.util.concurrent.Executors;
 
 final class CompanionServer {
     static final int PORT = 45787;
-    final String code = String.format(Locale.ROOT, "%06d", new SecureRandom().nextInt(1_000_000));
-    private final Activity activity;
+    final String code;
+    private final Context context;
     private final InstallEngine installer;
     private final ExecutorService workers = Executors.newCachedThreadPool();
-    private final String token = UUID.randomUUID().toString() + UUID.randomUUID();
-    private volatile boolean paired = false;
+    private final SharedPreferences preferences;
+    private final String token;
+    private volatile boolean paired;
+    private volatile boolean listening = false;
     private volatile boolean running = true;
-    private ServerSocket socket;
+    private volatile String lastError = "";
+    private volatile ServerSocket socket;
+    private int invalidPairAttempts = 0;
+    private long pairBlockedUntil = 0;
 
-    CompanionServer(Activity activity, InstallEngine installer) { this.activity = activity; this.installer = installer; }
+    CompanionServer(Context context, InstallEngine installer) {
+        this.context = context.getApplicationContext();
+        this.installer = installer;
+        this.preferences = this.context.getSharedPreferences("embertv_pairing", Context.MODE_PRIVATE);
+        String savedCode = preferences.getString("code", "");
+        if (!savedCode.matches("[0-9]{6}")) {
+            savedCode = String.format(Locale.ROOT, "%06d", new SecureRandom().nextInt(1_000_000));
+            preferences.edit().putString("code", savedCode).apply();
+        }
+        code = savedCode;
+        String savedToken = preferences.getString("token", "");
+        if (savedToken.isEmpty()) {
+            savedToken = UUID.randomUUID().toString() + UUID.randomUUID();
+            preferences.edit().putString("token", savedToken).apply();
+        }
+        token = savedToken;
+        paired = preferences.getBoolean("paired", false);
+    }
     void start() {
         workers.execute(() -> {
-            try (ServerSocket server = new ServerSocket(PORT)) {
+            try (ServerSocket server = new ServerSocket()) {
+                server.setReuseAddress(true);
+                server.bind(new InetSocketAddress(PORT), 32);
                 socket = server;
+                listening = true;
+                lastError = "";
+                installer.status("Background receiver listening on port " + PORT);
                 server.setSoTimeout(2000);
                 while (running) {
                     try { Socket client = server.accept(); workers.execute(() -> handle(client)); }
                     catch (java.net.SocketTimeoutException ignored) { }
                 }
-            } catch (Exception e) { installer.status("Companion server unavailable: " + e.getMessage()); }
+            } catch (Exception e) {
+                if (running) {
+                    lastError = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
+                    installer.status("Companion listener unavailable: " + lastError);
+                }
+            } finally {
+                listening = false;
+                socket = null;
+            }
         });
     }
     void stop() { running = false; try { if (socket != null) socket.close(); } catch (Exception ignored) { } workers.shutdownNow(); }
     boolean paired() { return paired; }
+    boolean listening() { return listening; }
+    String lastError() { return lastError; }
 
     private void handle(Socket client) {
         try (Socket c = client) {
-            c.setSoTimeout(45000);
+            c.setSoTimeout(120000);
             InputStream in = c.getInputStream(); OutputStream out = c.getOutputStream();
             String first = line(in);
             String[] parts = first.split(" ");
@@ -64,16 +103,39 @@ final class CompanionServer {
                 if (key.equals("x-ember-token")) auth = val;
             }
             if (length < 0 || length > 1_000_000_000L) { response(out, 413, "Payload too large"); return; }
-            if ("GET".equals(method) && "/status".equals(path)) { response(out, 200, "{\"name\":\"EmberTV\",\"paired\":" + paired + "}"); return; }
+            if ("GET".equals(method) && "/status".equals(path)) {
+                response(out, 200, new JSONObject().put("name", "EmberTV").put("ready", listening)
+                    .put("paired", paired).put("port", PORT).toString());
+                return;
+            }
             if ("POST".equals(method) && "/pair".equals(path)) {
                 JSONObject request = json(in, length);
-                if (!code.equals(request.optString("code"))) { response(out, 403, "Invalid pairing code"); return; }
-                paired = true;
+                synchronized (this) {
+                    long now = System.currentTimeMillis();
+                    if (now < pairBlockedUntil) { response(out, 429, "Too many attempts; wait one minute"); return; }
+                    if (!code.equals(request.optString("code"))) {
+                        invalidPairAttempts++;
+                        if (invalidPairAttempts >= 5) {
+                            pairBlockedUntil = now + 60_000;
+                            invalidPairAttempts = 0;
+                        }
+                        response(out, 403, "Invalid pairing code");
+                        return;
+                    }
+                    invalidPairAttempts = 0;
+                    paired = true;
+                    preferences.edit().putBoolean("paired", true).apply();
+                }
                 response(out, 200, new JSONObject().put("token", token).toString());
                 installer.status("iPhone companion paired");
                 return;
             }
             if (!paired || !token.equals(auth)) { response(out, 401, "Pair first"); return; }
+            if (("POST".equals(method) && ("/install".equals(path) || "/upload".equals(path)))
+                && !context.getPackageManager().canRequestPackageInstalls()) {
+                response(out, 403, "Allow EmberTV to install unknown apps in TV settings first");
+                return;
+            }
             if ("POST".equals(method) && "/install".equals(path)) {
                 JSONObject request = json(in, length);
                 String url = request.optString("url", "");
@@ -84,7 +146,7 @@ final class CompanionServer {
             }
             if ("POST".equals(method) && "/upload".equals(path)) {
                 if (length < 4 || length > 1_000_000_000L) { response(out, 413, "Invalid APK size"); return; }
-                File file = new File(activity.getCacheDir(), "iphone-" + UUID.randomUUID() + ".apk");
+                File file = new File(context.getCacheDir(), "iphone-" + UUID.randomUUID() + ".apk");
                 try (FileOutputStream fileOut = new FileOutputStream(file)) {
                     byte[] b = new byte[65536]; long remaining = length;
                     while (remaining > 0) {
@@ -98,7 +160,10 @@ final class CompanionServer {
                 return;
             }
             response(out, 404, "Not found");
-        } catch (Exception ignored) { }
+        } catch (Exception e) {
+            if (running) installer.status("iPhone request interrupted: " +
+                (e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage()));
+        }
     }
     private static JSONObject json(InputStream in, long length) throws Exception {
         if (length > 32768) throw new IllegalArgumentException("JSON request too large");

@@ -56,13 +56,49 @@ struct TVApp: Identifiable {
         guard code.count == 6 else { status = "Enter the six-digit pairing code from your TV"; return }
         isWorking = true; defer { isWorking = false }
         do {
-            let data = try await request(base.appendingPathComponent("pair"), json: ["code": code], authenticated: false)
-            guard let result = try JSONSerialization.jsonObject(with: data) as? [String: Any], let value = result["token"] as? String else { throw TVError.invalidResponse }
+            try await verifyTVReachable(base)
+            let data: Data
+            do {
+                data = try await request(base.appendingPathComponent("pair"), json: ["code": code], authenticated: false)
+            } catch let error as URLError where error.code == .networkConnectionLost {
+                // A TV listener that is restarting can close one in-flight
+                // connection. Retry once; never retry an invalid pairing code.
+                try await Task.sleep(nanoseconds: 350_000_000)
+                data = try await request(base.appendingPathComponent("pair"), json: ["code": code], authenticated: false)
+            }
+            guard let result = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let value = result["token"] as? String else { throw TVError.invalidResponse }
             token = value
             keychainWrite(Data(value.utf8), "emberTVToken")
             UserDefaults.standard.set(tvAddress, forKey: "tvAddress")
-            status = "Paired! You can now send APKs to the TV."
-        } catch { status = "Pairing failed: \(error.localizedDescription)" }
+            status = "Paired! Your TV can now receive APKs in the background."
+        } catch { status = "Pairing failed: \(diagnostic(error))" }
+    }
+    func testConnection() async {
+        guard let base else { status = "Enter the TV's IPv4 address"; return }
+        isWorking = true; defer { isWorking = false }
+        do {
+            try await verifyTVReachable(base)
+            status = "TV reachable at \(base.host ?? tvAddress):45787. Enter the pairing code to connect."
+        } catch { status = "TV not reachable: \(diagnostic(error))" }
+    }
+    private func verifyTVReachable(_ base: URL) async throws {
+        var request = URLRequest(url: base.appendingPathComponent("status"))
+        request.timeoutInterval = 10
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        let (data, response) = try await URLSession.shared.data(for: request)
+        try validate(response, data: data)
+        guard let info = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+              info["name"] as? String == "EmberTV" else { throw TVError.invalidResponse }
+        if let ready = info["ready"] as? Bool, !ready { throw TVError.server("The TV receiver has not started yet") }
+    }
+    private func diagnostic(_ error: Error) -> String {
+        guard let network = error as? URLError else { return error.localizedDescription }
+        switch network.code {
+        case .cannotConnectToHost, .timedOut, .networkConnectionLost, .notConnectedToInternet:
+            return "\(network.localizedDescription). Check that EmberTV's TV receiver is running, both devices use the same Wi-Fi, iOS Local Network access is enabled, and VPN is temporarily off."
+        default: return network.localizedDescription
+        }
     }
     func unpair() { token = ""; keychainDelete("emberTVToken"); status = "Unpaired locally" }
     func refresh() async {
@@ -138,6 +174,8 @@ struct TVApp: Identifiable {
     private func request(_ url: URL, json: [String: Any], authenticated: Bool) async throws -> Data {
         if authenticated && token.isEmpty { throw TVError.notPaired }
         var req = URLRequest(url: url)
+        req.timeoutInterval = 25
+        req.cachePolicy = .reloadIgnoringLocalCacheData
         req.httpMethod = "POST"; req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         if authenticated { req.setValue(token, forHTTPHeaderField: "X-Ember-Token") }
         req.httpBody = try JSONSerialization.data(withJSONObject: json)

@@ -122,14 +122,15 @@ struct ContentView: View {
                 Section("Android TV") {
                     TextField("TV IP address", text: $model.tvAddress).keyboardType(.numbersAndPunctuation).textInputAutocapitalization(.never).autocorrectionDisabled()
                     TextField("Six-digit TV pairing code", text: $model.code).keyboardType(.numberPad)
+                    Button("Test TV connection") { Task { await model.testConnection() } }.disabled(model.isWorking)
                     Button("Pair with TV") { Task { await model.pair() } }.disabled(model.isWorking)
                     if model.isPaired { Label("Paired", systemImage: "checkmark.circle.fill").foregroundStyle(.green); Button("Forget pairing", role: .destructive) { model.unpair() } }
                 }
                 Section("Instructions") {
-                    Text("1. Open EmberTV on your Android TV.")
+                    Text("1. Open EmberTV on your Android TV once to start its background receiver.")
                     Text("2. Select Pair iPhone in the TV sidebar.")
                     Text("3. Enter its TV IP and pairing code above.")
-                    Text("4. Browse an APK or send a file, then approve installation on the TV.")
+                    Text("4. Browse an APK or send a file. The TV receives it in the background; approve installation when prompted.")
                 }
                 statusRow
             }

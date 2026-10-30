@@ -1,6 +1,8 @@
 package com.soum91.embertv;
 
-import android.app.Activity;
+import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -8,9 +10,6 @@ import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.content.pm.SigningInfo;
-import android.net.Uri;
-import android.os.Build;
-import android.provider.Settings;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -19,7 +18,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -29,17 +27,19 @@ import java.util.concurrent.Executors;
 
 final class InstallEngine {
     interface Progress { void status(String message); }
-    private final Activity activity;
+    private final Context context;
     private final Progress progress;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    InstallEngine(Activity activity, Progress progress) { this.activity = activity; this.progress = progress; }
-    void status(String s) { activity.runOnUiThread(() -> progress.status(s)); }
+    InstallEngine(Context context, Progress progress) { this.context = context.getApplicationContext(); this.progress = progress; }
+    void status(String s) { mainHandler.post(() -> progress.status(s)); }
+    void shutdown() { executor.shutdown(); }
 
     void fromUrl(String url, String expectedPackage, String sha256) {
         if (!checkPermission()) return;
         executor.execute(() -> {
-            File file = new File(activity.getCacheDir(), "download-" + UUID.randomUUID() + ".apk");
+            File file = new File(context.getCacheDir(), "download-" + UUID.randomUUID() + ".apk");
             try {
                 if (!url.startsWith("https://")) throw new IllegalArgumentException("HTTPS download required");
                 status("Downloading APK...");
@@ -69,23 +69,19 @@ final class InstallEngine {
         });
     }
     void fromFile(File file, String expectedPackage, String sha256) {
-        if (!checkPermission()) return;
+        if (!checkPermission()) { file.delete(); return; }
         executor.execute(() -> { try { install(file, expectedPackage, sha256); } catch (Exception e) { status("Install stopped: " + e.getMessage()); } finally { file.delete(); } });
     }
     private boolean checkPermission() {
-        if (!activity.getPackageManager().canRequestPackageInstalls()) {
-            status("On TV, allow EmberTV to install unknown apps, then retry.");
-            activity.runOnUiThread(() -> {
-                Intent i = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + activity.getPackageName()));
-                activity.startActivity(i);
-            });
+        if (!context.getPackageManager().canRequestPackageInstalls()) {
+            status("Allow EmberTV to install unknown apps in TV Settings, then retry.");
             return false;
         }
         return true;
     }
     private void install(File file, String expectedPackage, String expectedHash) throws Exception {
         if (expectedHash != null && !expectedHash.isEmpty() && !sha256(file).equalsIgnoreCase(expectedHash)) throw new IllegalArgumentException("SHA-256 mismatch; download discarded");
-        PackageManager pm = activity.getPackageManager();
+        PackageManager pm = context.getPackageManager();
         PackageInfo candidate = pm.getPackageArchiveInfo(file.getAbsolutePath(), PackageManager.GET_SIGNING_CERTIFICATES);
         if (candidate == null || candidate.packageName == null) throw new IllegalArgumentException("Invalid APK manifest");
         if (expectedPackage != null && !expectedPackage.isEmpty() && !expectedPackage.equals(candidate.packageName)) throw new IllegalArgumentException("Catalog package ID differs from APK");
@@ -115,9 +111,9 @@ final class InstallEngine {
                 while ((n = in.read(buf)) != -1) out.write(buf, 0, n);
                 session.fsync(out);
             }
-            Intent result = new Intent(activity, InstallReceiver.class);
+            Intent result = new Intent(context, InstallReceiver.class);
             result.setAction("com.soum91.embertv.INSTALL_RESULT");
-            PendingIntent pi = PendingIntent.getBroadcast(activity, sessionId, result, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+            PendingIntent pi = PendingIntent.getBroadcast(context, sessionId, result, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
             session.commit(pi.getIntentSender());
             status("Installation submitted. Confirm on the TV when prompted.");
         } catch (Exception e) {

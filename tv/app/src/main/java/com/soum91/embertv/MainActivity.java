@@ -1,9 +1,19 @@
 package com.soum91.embertv;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
+import android.os.Build;
+import android.os.IBinder;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -42,7 +52,9 @@ import java.util.concurrent.Executors;
 public final class MainActivity extends Activity {
     static final int BG = Color.rgb(17, 19, 25), PANEL = Color.rgb(29, 32, 41), WHITE = Color.rgb(247, 247, 249);
     static final int ORANGE = Color.rgb(242, 112, 56), MUTED = Color.rgb(165, 170, 184);
-    private static MainActivity current;
+    private static volatile MainActivity current;
+    private static volatile String lastMessage = "Ready";
+    private volatile boolean visible;
     private final ExecutorService network = Executors.newSingleThreadExecutor();
     private final ExecutorService icons = Executors.newFixedThreadPool(4);
     private final Map<String, Bitmap> iconCache = new ConcurrentHashMap<>();
@@ -50,19 +62,45 @@ public final class MainActivity extends Activity {
     private final List<String> downloadHistory = new ArrayList<>();
     private LinearLayout body, sidebar;
     private TextView feedback, pageTitle;
-    private InstallEngine installer;
-    private CompanionServer companion;
     private String page = "Discover";
 
     @Override public void onCreate(Bundle b) {
         super.onCreate(b); current = this;
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-        installer = new InstallEngine(this, this::setFeedback);
-        companion = new CompanionServer(this, installer); companion.start();
         buildShell(); show("Discover"); refresh();
+        if (!lastMessage.equals("Ready")) setFeedback(lastMessage);
+        if (getSharedPreferences("embertv_receiver", MODE_PRIVATE).getBoolean("enabled", true)) startBackgroundReceiver();
+        if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 4578);
     }
-    @Override public void onDestroy() { if (current == this) current = null; companion.stop(); network.shutdownNow(); icons.shutdownNow(); super.onDestroy(); }
-    static void report(String message) { if (current != null) current.runOnUiThread(() -> current.setFeedback(message)); }
+    @Override protected void onResume() {
+        super.onResume();
+        visible = true;
+        if (page.equals("Pair iPhone")) show("Pair iPhone");
+        InstallReceiver.approveWhenVisible(this);
+    }
+    @Override protected void onPause() { visible = false; super.onPause(); }
+    @Override public void onDestroy() { if (current == this) current = null; network.shutdownNow(); icons.shutdownNow(); super.onDestroy(); }
+    static boolean isVisible() { MainActivity a = current; return a != null && a.visible; }
+    static void report(String message) {
+        lastMessage = message;
+        MainActivity a = current;
+        if (a != null) a.runOnUiThread(() -> { if (!a.isFinishing()) a.setFeedback(message); });
+    }
+    private void startBackgroundReceiver() {
+        getSharedPreferences("embertv_receiver", MODE_PRIVATE).edit().putBoolean("enabled", true).apply();
+        try { startForegroundService(new Intent(this, ReceiverService.class)); }
+        catch (Exception e) { setFeedback("Cannot start background receiver: " + e.getMessage()); }
+    }
+    private void installFromCatalog(Catalog.App app) {
+        ReceiverService service = ReceiverService.active;
+        if (service == null) {
+            startBackgroundReceiver();
+            setFeedback("Receiver is starting. Please retry in a moment.");
+            return;
+        }
+        service.installer.fromUrl(app.latest.url, app.packageName, app.latest.sha256);
+    }
     private int dp(float v) { return (int)(v * getResources().getDisplayMetrics().density + 0.5f); }
     private GradientDrawable rounded(int color, int radius) { GradientDrawable d = new GradientDrawable(); d.setColor(color); d.setCornerRadius(dp(radius)); return d; }
     private StateListDrawable focusBackground() {
@@ -209,7 +247,7 @@ public final class MainActivity extends Activity {
                 "\nBuild: " + app.latest.code + "\n\nChangelog:\n" + (app.latest.changelog.isEmpty() ? "Not provided" : app.latest.changelog);
         new AlertDialog.Builder(this).setTitle(app.name).setMessage(info)
                 .setNegativeButton("Cancel", null)
-                .setPositiveButton("Download & install", (d, which) -> installer.fromUrl(app.latest.url, app.packageName, app.latest.sha256)).show();
+                .setPositiveButton("Download & install", (d, which) -> installFromCatalog(app)).show();
     }
     private void refresh() {
         setFeedback("Refreshing GitHub sources...");
@@ -262,18 +300,87 @@ public final class MainActivity extends Activity {
         }
     }
     private void showPair() {
-        paragraph("Open EmberTV Companion on your iPhone. Connect both devices to the same Wi-Fi network, then enter these details:");
+        paragraph("Open EmberTV Companion on your iPhone. Connect both devices to the same trusted Wi-Fi network.");
+        ReceiverService service = ReceiverService.active;
+        CompanionServer server = service == null ? null : service.server;
         TextView address = label("TV IP: " + CompanionServer.localIp() + "\nPort: " + CompanionServer.PORT, 27, WHITE, true);
         address.setPadding(0, dp(12), 0, dp(28)); body.addView(address);
-        TextView code = label("PAIRING CODE:  " + companion.code, 34, ORANGE, true);
+        TextView code = label("PAIRING CODE:  " + (server == null ? "Starting receiver..." : server.code), 31, ORANGE, true);
         code.setPadding(0, dp(12), 0, dp(28)); body.addView(code);
-        paragraph("Companion status: " + (companion.paired() ? "Paired" : "Waiting for pairing") + ". EmberTV must stay open to receive install commands.");
+        String state = server == null ? "Not running" :
+                server.listening() ? "Listening in background" :
+                server.lastError().isEmpty() ? "Starting..." : "Unavailable: " + server.lastError();
+        paragraph("Receiver: " + state + ". Pairing: " + (server != null && server.paired() ? "Paired" : "Not paired") + ".");
+        paragraph("The background receiver remains active when you leave EmberTV. Android may still require approval for each APK installation.");
+        action("Start background receiver", () -> { startBackgroundReceiver(); show("Pair iPhone"); });
+        action("Allow APK installations", () -> {
+            Intent i = new Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                android.net.Uri.parse("package:" + getPackageName()));
+            startActivity(i);
+        });
         action("Refresh status", () -> show("Pair iPhone"));
+        action("Stop background receiver", () -> {
+            getSharedPreferences("embertv_receiver", MODE_PRIVATE).edit().putBoolean("enabled", false).apply();
+            stopService(new Intent(this, ReceiverService.class));
+            show("Pair iPhone");
+        });
     }
     private void showAbout() {
         paragraph("EmberTV 0.1 • GitHub APK catalog and installer");
         paragraph("Package and signing-certificate checks protect installed app data. All APKs are delivered to Android's official installer.");
         paragraph("APK signature private keys cannot be extracted from installed apps or public GitHub releases. Publishers must keep signing keys consistent.");
         paragraph("iPhone pairing uses local-network HTTP. Only pair on your trusted Wi-Fi. Never forward port " + CompanionServer.PORT + " to the internet.");
+    }
+
+    /** Foreground listener survives Activity destruction and keeps APK transfers alive. */
+    public static final class ReceiverService extends Service {
+        private static final String CHANNEL = "embertv_receiver";
+        private static final int NOTIFICATION_ID = 45787;
+        private static volatile ReceiverService active;
+        private CompanionServer server;
+        private InstallEngine installer;
+
+        @Override public void onCreate() {
+            super.onCreate();
+            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            manager.createNotificationChannel(new NotificationChannel(CHANNEL, "EmberTV background receiver", NotificationManager.IMPORTANCE_LOW));
+            Intent open = new Intent(this, MainActivity.class);
+            PendingIntent launch = PendingIntent.getActivity(this, 0, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            Notification notification = new Notification.Builder(this, CHANNEL)
+                .setSmallIcon(R.drawable.embertv_icon)
+                .setContentTitle("EmberTV receiver active")
+                .setContentText("Ready to receive APKs from your iPhone")
+                .setContentIntent(launch)
+                .setOngoing(true)
+                .build();
+            if (Build.VERSION.SDK_INT >= 29)
+                startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE);
+            else startForeground(NOTIFICATION_ID, notification);
+            installer = new InstallEngine(this, MainActivity::report);
+            server = new CompanionServer(this, installer);
+            active = this;
+            server.start();
+        }
+
+        @Override public int onStartCommand(Intent intent, int flags, int startId) { return START_STICKY; }
+        @Override public IBinder onBind(Intent intent) { return null; }
+        @Override public void onDestroy() {
+            if (active == this) active = null;
+            if (server != null) server.stop();
+            if (installer != null) installer.shutdown();
+            MainActivity.report("Background receiver stopped");
+            super.onDestroy();
+        }
+    }
+
+    /** Restart the opted-in receiver after TV boot and an EmberTV update. */
+    public static final class AutoStartReceiver extends BroadcastReceiver {
+        @Override public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (!Intent.ACTION_BOOT_COMPLETED.equals(action) && !Intent.ACTION_MY_PACKAGE_REPLACED.equals(action)) return;
+            if (!context.getSharedPreferences("embertv_receiver", Context.MODE_PRIVATE).getBoolean("enabled", false)) return;
+            try { context.startForegroundService(new Intent(context, ReceiverService.class)); }
+            catch (Exception ignored) { }
+        }
     }
 }

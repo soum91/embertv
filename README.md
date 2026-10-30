@@ -12,11 +12,13 @@ An Android TV APK catalog and installer with an iOS companion. EmberTV reads pub
 - Both EmberTV catalogs and AltStore-style `apps[].versions[]` entries with APK `downloadURL` links. iOS-only IPA entries are ignored.
 - Installed version comparisons using Android `versionCode` and public signing certificates. A mismatch stops before installation and does not remove app data.
 - HTTPS download, optional SHA-256 verification, Android PackageInstaller, and explicit TV confirmation.
-- Local-network companion pairing with a six-digit code and authenticated install commands.
+- Local-network companion pairing with a six-digit code, persisted pairing credentials, and authenticated install commands.
+- An opt-in-controllable Android connected-device foreground service keeps the APK receiver and installer active when the TV UI is closed. It shows an ongoing notification and can restart after boot or an app update. You can stop/restart it from Pair iPhone.
+- Background APK downloading and session preparation continue without the TV UI, but Android still requires user approval. The installer displays a notification and resumes pending approval when EmberTV is reopened.
 
 ## iPhone companion
 
-The iOS 16+ EmberTV companion browses JSON and public GitHub APK release sources, pairs with the TV via its IP address and the code shown on the Pair screen, and asks the TV to download and install selected apps. It also sends a local `.apk` through the Files picker. Both devices must be on the same trusted LAN, and EmberTV must be open on the TV to receive commands. This initial companion uses a pairing token over local HTTP and should **not** be exposed to the public internet.
+The iOS 16+ EmberTV companion browses JSON and public GitHub APK release sources, pairs with the TV via its IP address and the code shown on the Pair screen, and asks the TV to download and install selected apps. It also sends a local `.apk` through the Files picker. Both devices must be on the same trusted LAN. Launch EmberTV on the TV once to enable its background receiver. The iPhone Connect screen includes a Test TV connection action for checking the TV listener before pairing. This initial companion uses a pairing token over local HTTP and should **not** be exposed to the public internet.
 
 Drift file transfer is handled by its own **standalone Drift Companion** app, built and released from `soum91/drift`; it is intentionally not a tab in EmberTV Companion. EmberTV's consolidated Android catalog still lists the Drift TV APK.
 
