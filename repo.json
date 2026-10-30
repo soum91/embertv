@@ -14,6 +14,17 @@
       "category": "utilities",
       "versions": [
         {
+          "version": "0.1.0.17",
+          "buildVersion": "17",
+          "date": "2026-10-30",
+          "localizedDescription": "* fix(tv): export APK backups directly through MediaStore Downloads without Files picker; repair source screen compilation\n* catalog: publish EmberTV 0.1.0.15",
+          "changelog": "* fix(tv): export APK backups directly through MediaStore Downloads without Files picker; repair source screen compilation\n* catalog: publish EmberTV 0.1.0.15",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/tv-v0.1.0.17/EmberTV.apk",
+          "size": 111372,
+          "versionCode": 17,
+          "sha256": "6d059d084a95bad4c77808d8042a43cae2778c10677212adb94191bc7feec440"
+        },
+        {
           "version": "0.1.0.15",
           "buildVersion": "15",
           "date": "2026-10-30",
