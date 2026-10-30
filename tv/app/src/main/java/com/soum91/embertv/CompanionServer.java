@@ -3,6 +3,11 @@ package com.soum91.embertv;
 import android.content.Context;
 import android.content.SharedPreferences;
 import org.json.JSONObject;
+import org.json.JSONArray;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import java.io.FileInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -134,6 +139,62 @@ final class CompanionServer {
             if (("POST".equals(method) && ("/install".equals(path) || "/upload".equals(path)))
                 && !context.getPackageManager().canRequestPackageInstalls()) {
                 response(out, 403, "Allow EmberTV to install unknown apps in TV settings first");
+                return;
+            }
+            if ("GET".equals(method) && "/apps".equals(path)) {
+                JSONArray records = new JSONArray();
+                PackageManager pm = context.getPackageManager();
+                for (PackageInfo info : pm.getInstalledPackages(0)) {
+                    if (info.applicationInfo == null) continue;
+                    ApplicationInfo app = info.applicationInfo;
+                    boolean system = (app.flags & (ApplicationInfo.FLAG_SYSTEM | ApplicationInfo.FLAG_UPDATED_SYSTEM_APP)) != 0;
+                    int splits = app.splitSourceDirs == null ? 0 : app.splitSourceDirs.length;
+                    records.put(new JSONObject()
+                        .put("packageName", info.packageName)
+                        .put("name", String.valueOf(app.loadLabel(pm)))
+                        .put("version", info.versionName == null ? "" : info.versionName)
+                        .put("system", system)
+                        .put("splitCount", splits));
+                }
+                response(out, 200, new JSONObject().put("apps", records).toString());
+                return;
+            }
+            if ("GET".equals(method) && path.startsWith("/backup?package=")) {
+                String packageName = path.substring("/backup?package=".length());
+                if (!packageName.matches("[A-Za-z0-9_.]+")) {
+                    response(out, 400, "Invalid package name"); return;
+                }
+                File temporary = null;
+                boolean responseStarted = false;
+                try {
+                    File[] files = MainActivity.ApkBackup.paths(context, packageName);
+                    boolean split = files.length > 1;
+                    temporary = File.createTempFile("embertv-backup-", split ? ".apks" : ".apk", context.getCacheDir());
+                    try (FileOutputStream saved = new FileOutputStream(temporary)) {
+                        MainActivity.ApkBackup.write(context, packageName, saved);
+                    }
+                    String filename = packageName + (split ? ".apks" : ".apk");
+                    String headers = "HTTP/1.1 200 OK\r\n" +
+                        "Content-Type: " + (split ? "application/zip" : "application/vnd.android.package-archive") + "\r\n" +
+                        "Content-Disposition: attachment; filename=\"" + filename + "\"\r\n" +
+                        "Cache-Control: no-store\r\n" +
+                        "Content-Length: " + temporary.length() + "\r\nConnection: close\r\n\r\n";
+                    out.write(headers.getBytes(StandardCharsets.US_ASCII));
+                    responseStarted = true;
+                    try (FileInputStream backup = new FileInputStream(temporary)) {
+                        byte[] buffer = new byte[65536]; int n;
+                        while ((n = backup.read(buffer)) != -1) out.write(buffer, 0, n);
+                    }
+                    out.flush();
+                } catch (Exception error) {
+                    if (!responseStarted) {
+                        response(out, 422, "APK export failed: " + error.getMessage());
+                    } else {
+                        installer.status("APK export interrupted: " + error.getMessage());
+                    }
+                } finally {
+                    if (temporary != null) temporary.delete();
+                }
                 return;
             }
             if ("POST".equals(method) && "/install".equals(path)) {

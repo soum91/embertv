@@ -13,11 +13,28 @@ struct TVApp: Identifiable {
     let changelog: String
 }
 
+struct TVInstalledApp: Identifiable, Decodable {
+    let packageName: String
+    let name: String
+    let version: String
+    let system: Bool
+    let splitCount: Int
+    var id: String { packageName }
+    var extensionName: String { splitCount > 0 ? "apks" : "apk" }
+}
+struct TVInstalledList: Decodable { let apps: [TVInstalledApp] }
+struct TVBackupShare: Identifiable {
+    let id = UUID()
+    let url: URL
+}
+
 @MainActor final class TVModel: ObservableObject {
     @Published var tvAddress = UserDefaults.standard.string(forKey: "tvAddress") ?? ""
     @Published var code = ""
     @Published var status = "Pair with EmberTV on your local Wi-Fi"
     @Published var apps: [TVApp] = []
+    @Published var installedApps: [TVInstalledApp] = []
+    @Published var backupShare: TVBackupShare?
     @Published var sources: [String] = {
         let defaults = UserDefaults.standard
         var saved = defaults.stringArray(forKey: "sources") ?? ["https://raw.githubusercontent.com/soum91/embertv/main/repo.json"]
@@ -170,6 +187,49 @@ struct TVApp: Identifiable {
             try validate(response, data: data)
             status = "APK sent. Confirm installation on the TV."
         } catch { status = "Upload failed: \(error.localizedDescription)" }
+    }
+    func loadInstalledApps() async {
+        guard let base, !token.isEmpty else { status = "Pair with your TV first"; return }
+        isWorking = true; defer { isWorking = false }
+        do {
+            var req = URLRequest(url: base.appendingPathComponent("apps"))
+            req.timeoutInterval = 25
+            req.cachePolicy = .reloadIgnoringLocalCacheData
+            req.setValue(token, forHTTPHeaderField: "X-Ember-Token")
+            let (data, response) = try await URLSession.shared.data(for: req)
+            try validate(response, data: data)
+            installedApps = try JSONDecoder().decode(TVInstalledList.self, from: data).apps
+                .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+            status = "Found \(installedApps.count) installed packages on TV."
+        } catch { status = "Cannot list installed TV apps: \(diagnostic(error))" }
+    }
+    func exportBackup(_ app: TVInstalledApp) async {
+        guard let base, !token.isEmpty else { status = "Pair with your TV first"; return }
+        isWorking = true; defer { isWorking = false }
+        do {
+            var components = URLComponents(url: base.appendingPathComponent("backup"), resolvingAgainstBaseURL: false)
+            components?.queryItems = [URLQueryItem(name: "package", value: app.packageName)]
+            guard let endpoint = components?.url else { throw TVError.invalidResponse }
+            var req = URLRequest(url: endpoint)
+            req.timeoutInterval = 180
+            req.setValue(token, forHTTPHeaderField: "X-Ember-Token")
+            let (download, response) = try await URLSession.shared.download(for: req)
+            guard let http = response as? HTTPURLResponse else { throw TVError.invalidResponse }
+            if !(200..<300).contains(http.statusCode) {
+                let data = try Data(contentsOf: download)
+                try validate(response, data: data)
+                throw TVError.server("Export HTTP \(http.statusCode)")
+            }
+            let attributes = try FileManager.default.attributesOfItem(atPath: download.path)
+            let length = (attributes[.size] as? NSNumber)?.int64Value ?? 0
+            guard length > 0, length <= 1_600_000_000 else { throw TVError.server("Backup file empty or too large") }
+            let safeName = app.packageName.replacingOccurrences(of: #"[^A-Za-z0-9_.-]"#, with: "_", options: .regularExpression)
+            let target = FileManager.default.temporaryDirectory
+                .appendingPathComponent("\(UUID().uuidString)-\(safeName).\(app.extensionName)")
+            try FileManager.default.moveItem(at: download, to: target)
+            backupShare = TVBackupShare(url: target)
+            status = "Backup ready: \(app.name) (\(app.extensionName.uppercased())). Save to Files or share."
+        } catch { status = "Backup failed: \(diagnostic(error))" }
     }
     private func request(_ url: URL, json: [String: Any], authenticated: Bool) async throws -> Data {
         if authenticated && token.isEmpty { throw TVError.notPaired }

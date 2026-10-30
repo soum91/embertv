@@ -24,6 +24,12 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.os.Bundle;
+import android.net.Uri;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.OutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -63,6 +69,9 @@ public final class MainActivity extends Activity {
     private LinearLayout body, sidebar;
     private TextView feedback, pageTitle;
     private String page = "Discover";
+    private int installedFilter = 0;
+    private String pendingExportPackage = "";
+    private static final int EXPORT_DOCUMENT_REQUEST = 45789;
 
     @Override public void onCreate(Bundle b) {
         super.onCreate(b); current = this;
@@ -78,6 +87,23 @@ public final class MainActivity extends Activity {
         visible = true;
         if (page.equals("Pair iPhone")) show("Pair iPhone");
         InstallReceiver.approveWhenVisible(this);
+    }
+    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != EXPORT_DOCUMENT_REQUEST || resultCode != RESULT_OK ||
+            data == null || data.getData() == null) return;
+        final String packageName = pendingExportPackage;
+        final Uri destination = data.getData();
+        if (packageName.isEmpty()) return;
+        network.execute(() -> {
+            try (OutputStream out = getContentResolver().openOutputStream(destination, "w")) {
+                if (out == null) throw new IllegalStateException("Document provider did not open the destination");
+                int count = ApkBackup.write(this, packageName, out);
+                MainActivity.report("Exported " + packageName + (count > 1 ? " (base and " + (count - 1) + " splits)" : " (APK)") + " to selected location");
+            } catch (Exception e) {
+                MainActivity.report("Export failed for " + packageName + ": " + e.getMessage());
+            }
+        });
     }
     @Override protected void onPause() { visible = false; super.onPause(); }
     @Override public void onDestroy() { if (current == this) current = null; network.shutdownNow(); icons.shutdownNow(); super.onDestroy(); }
@@ -286,17 +312,134 @@ public final class MainActivity extends Activity {
         }
     }
     private void showInstalled() {
-        paragraph("Installed user applications. EmberTV will not uninstall apps to resolve signature conflicts.");
+        paragraph("Back up installed APK packages, including system apps. Split apps export as .apks archives. Private app data and signing keys are not included.");
+        String[] filters = {"User apps", "System apps", "All apps"};
+        action("Showing: " + filters[installedFilter] + "  •  Change filter", () -> {
+            installedFilter = (installedFilter + 1) % filters.length;
+            show("Installed");
+        });
         List<PackageInfo> packages = getPackageManager().getInstalledPackages(0);
-        List<PackageInfo> userApps = new ArrayList<>();
-        for (PackageInfo p : packages) if (p.applicationInfo != null && (p.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) userApps.add(p);
-        Collections.sort(userApps, Comparator.comparing(p -> String.valueOf(p.applicationInfo.loadLabel(getPackageManager())).toLowerCase()));
-        for (PackageInfo p : userApps) {
-            String name = String.valueOf(p.applicationInfo.loadLabel(getPackageManager()));
-            action(name + "   •   " + p.versionName, () -> {
-                Intent launch = getPackageManager().getLaunchIntentForPackage(p.packageName);
-                if (launch != null) startActivity(launch); else setFeedback("No launch activity for " + p.packageName);
-            });
+        List<PackageInfo> visibleApps = new ArrayList<>();
+        for (PackageInfo p : packages) {
+            if (p.applicationInfo == null) continue;
+            boolean system = (p.applicationInfo.flags & (ApplicationInfo.FLAG_SYSTEM | ApplicationInfo.FLAG_UPDATED_SYSTEM_APP)) != 0;
+            if (installedFilter == 0 && system || installedFilter == 1 && !system) continue;
+            visibleApps.add(p);
+        }
+        Collections.sort(visibleApps, Comparator.comparing(p ->
+                String.valueOf(p.applicationInfo.loadLabel(getPackageManager())).toLowerCase(java.util.Locale.ROOT)));
+        paragraph(visibleApps.size() + " packages. Select an app for Launch or Export.");
+        EditText search = new EditText(this);
+        search.setSingleLine(true); search.setTextColor(WHITE); search.setHintTextColor(MUTED);
+        search.setHint("Search installed packages..."); search.setTextSize(19);
+        search.setPadding(dp(15), dp(11), dp(15), dp(11)); search.setBackground(rounded(PANEL, 12));
+        body.addView(search, new LinearLayout.LayoutParams(-1, dp(62)));
+        LinearLayout results = new LinearLayout(this); results.setOrientation(LinearLayout.VERTICAL);
+        body.addView(results);
+        Runnable populate = () -> {
+            results.removeAllViews();
+            String query = search.getText().toString().toLowerCase(java.util.Locale.ROOT);
+            int displayed = 0;
+            for (PackageInfo p : visibleApps) {
+                String name = String.valueOf(p.applicationInfo.loadLabel(getPackageManager()));
+                if (!name.toLowerCase(java.util.Locale.ROOT).contains(query) &&
+                    !p.packageName.toLowerCase(java.util.Locale.ROOT).contains(query)) continue;
+                boolean system = (p.applicationInfo.flags & (ApplicationInfo.FLAG_SYSTEM | ApplicationInfo.FLAG_UPDATED_SYSTEM_APP)) != 0;
+                String split = p.applicationInfo.splitSourceDirs == null || p.applicationInfo.splitSourceDirs.length == 0
+                    ? "APK" : "SPLIT APKs";
+                Button entry = button(name + "  •  " + (system ? "SYSTEM" : "USER") + "  •  " + split, () -> installedDetails(p));
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-1, dp(60));
+                params.topMargin = dp(8); results.addView(entry, params);
+                displayed++;
+            }
+            if (displayed == 0) {
+                TextView none = label("No matching packages", 18, MUTED, false);
+                results.addView(none);
+            }
+        };
+        populate.run();
+        search.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { populate.run(); }
+            @Override public void afterTextChanged(Editable value) { }
+        });
+    }
+    private void installedDetails(PackageInfo p) {
+        boolean system = (p.applicationInfo.flags & (ApplicationInfo.FLAG_SYSTEM | ApplicationInfo.FLAG_UPDATED_SYSTEM_APP)) != 0;
+        int splits = p.applicationInfo.splitSourceDirs == null ? 0 : p.applicationInfo.splitSourceDirs.length;
+        String name = String.valueOf(p.applicationInfo.loadLabel(getPackageManager()));
+        new AlertDialog.Builder(this)
+            .setTitle(name)
+            .setMessage("Package: " + p.packageName + "\nVersion: " + p.versionName +
+                "\nType: " + (system ? "System" : "User") +
+                "\nAPK files: " + (1 + splits) +
+                "\n\nBackups include executable APKs only, not app data, credentials or OBB assets.")
+            .setItems(new String[]{"Export APK / split archive to USB or Files", "Launch app"}, (dialog, which) -> {
+                if (which == 0) exportPackage(p);
+                else {
+                    Intent launch = getPackageManager().getLaunchIntentForPackage(p.packageName);
+                    if (launch != null) startActivity(launch);
+                    else setFeedback("No launch activity for " + p.packageName);
+                }
+            }).show();
+    }
+    private void exportPackage(PackageInfo p) {
+        boolean split = p.applicationInfo.splitSourceDirs != null && p.applicationInfo.splitSourceDirs.length > 0;
+        String version = (p.versionName == null ? "installed" : p.versionName).replaceAll("[^a-zA-Z0-9._-]", "_");
+        String filename = p.packageName + "-" + version + (split ? ".apks" : ".apk");
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType(split ? "application/zip" : "application/vnd.android.package-archive");
+        intent.putExtra(Intent.EXTRA_TITLE, filename);
+        pendingExportPackage = p.packageName;
+        try {
+            startActivityForResult(intent, EXPORT_DOCUMENT_REQUEST);
+        } catch (Exception e) {
+            setFeedback("No file-save picker on this TV: " + e.getMessage() +
+                ". You can export this app using EmberTV Companion on iPhone instead.");
+        }
+    }
+
+    /** Reads only the installed public APK files; never touches private application data. */
+    static final class ApkBackup {
+        static File[] paths(Context context, String packageName) throws Exception {
+            if (!packageName.matches("[A-Za-z0-9_.]+")) throw new IllegalArgumentException("Invalid package name");
+            PackageInfo info = context.getPackageManager().getPackageInfo(packageName, 0);
+            if (info.applicationInfo == null || info.applicationInfo.sourceDir == null)
+                throw new IllegalStateException("Installed package has no readable base APK");
+            List<File> files = new ArrayList<>();
+            files.add(new File(info.applicationInfo.sourceDir));
+            if (info.applicationInfo.splitSourceDirs != null)
+                for (String path : info.applicationInfo.splitSourceDirs) files.add(new File(path));
+            long total = 0;
+            for (File file : files) {
+                if (!file.isFile() || !file.canRead())
+                    throw new IllegalStateException("APK not accessible: " + file.getName());
+                total += file.length();
+                if (total > 1_500_000_000L) throw new IllegalStateException("APK backup exceeds 1.5 GB safety limit");
+            }
+            return files.toArray(new File[0]);
+        }
+        static int write(Context context, String packageName, OutputStream output) throws Exception {
+            File[] files = paths(context, packageName);
+            if (files.length == 1) { copy(files[0], output); return 1; }
+            ZipOutputStream zip = new ZipOutputStream(output);
+            for (int index = 0; index < files.length; index++) {
+                String name = index == 0 ? "base.apk" : files[index].getName();
+                if (!name.endsWith(".apk") || name.contains("/") || name.contains("\\"))
+                    name = "split_" + index + ".apk";
+                zip.putNextEntry(new ZipEntry(index == 0 ? "base.apk" : index + "_" + name));
+                copy(files[index], zip);
+                zip.closeEntry();
+            }
+            zip.finish();
+            return files.length;
+        }
+        private static void copy(File source, OutputStream out) throws Exception {
+            try (FileInputStream in = new FileInputStream(source)) {
+                byte[] buffer = new byte[65536]; int n;
+                while ((n = in.read(buffer)) != -1) out.write(buffer, 0, n);
+            }
         }
     }
     private void showPair() {

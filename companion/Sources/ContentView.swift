@@ -7,6 +7,8 @@ struct ContentView: View {
     @State private var selectedTab = 0
     @State private var chooseAPK = false
     @State private var showDetails: TVApp?
+    @State private var installedCategory = 0
+    @State private var backupSearch = ""
     @FocusState private var sourceFieldFocused: Bool
 
     var body: some View {
@@ -15,6 +17,7 @@ struct ContentView: View {
             transfer.tabItem { Label("Send APK", systemImage: "arrow.up.doc.fill") }.tag(1)
             pairing.tabItem { Label("Connect", systemImage: "tv") }.tag(2)
             sources.tabItem { Label("Sources", systemImage: "tray.full.fill") }.tag(3)
+            backups.tabItem { Label("Backups", systemImage: "square.and.arrow.down") }.tag(4)
         }
         .preferredColorScheme(.dark)
         .onChange(of: selectedTab) { _ in sourceFieldFocused = false }
@@ -34,6 +37,9 @@ struct ContentView: View {
                     model.status = "APK selection cancelled."
                 }
             )
+        }
+        .sheet(item: $model.backupShare) { backup in
+            EmberTVBackupShareSheet(url: backup.url)
         }
         .sheet(item: $showDetails) { app in
             NavigationStack {
@@ -113,6 +119,60 @@ struct ContentView: View {
                 statusRow
             }
             .safeAreaInset(edge: .bottom, spacing: 0) { scrollClearance }
+        }
+    }
+    private var backups: some View {
+        VStack(spacing: 0) {
+            pageHeader("APK Backups")
+            Form {
+                Section {
+                    Picker("Packages", selection: $installedCategory) {
+                        Text("User").tag(0)
+                        Text("System").tag(1)
+                        Text("All").tag(2)
+                    }.pickerStyle(.segmented)
+                    TextField("Search installed TV apps", text: $backupSearch)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                    Button { Task { await model.loadInstalledApps() } } label: {
+                        Label("Refresh installed apps", systemImage: "arrow.clockwise")
+                    }.disabled(model.isWorking || !model.isPaired)
+                    Text("Tap an app to export its installed APK. Split packages are saved as .apks archives. This does not include private app data or OBB files.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
+                Section("Installed on TV (\(model.installedApps.count))") {
+                    ForEach(model.installedApps.filter { app in
+                        (installedCategory == 2 || app.system == (installedCategory == 1)) &&
+                        (backupSearch.isEmpty ||
+                         app.name.localizedCaseInsensitiveContains(backupSearch) ||
+                         app.packageName.localizedCaseInsensitiveContains(backupSearch))
+                    }) { app in
+                        Button {
+                            Task { await model.exportBackup(app) }
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: app.system ? "gearshape.2.fill" : "app.fill")
+                                    .foregroundStyle(app.system ? .gray : .orange)
+                                    .frame(width: 28)
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(app.name).font(.headline)
+                                    Text("\(app.packageName) • \(app.version)")
+                                        .font(.caption).foregroundStyle(.secondary)
+                                        .lineLimit(1)
+                                }
+                                Spacer()
+                                Text(app.splitCount > 0 ? "APKS" : "APK")
+                                    .font(.caption).foregroundStyle(.secondary)
+                                Image(systemName: "square.and.arrow.up").foregroundStyle(.orange)
+                            }
+                        }
+                        .disabled(model.isWorking)
+                    }
+                }
+                statusRow
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) { scrollClearance }
+            .task { if model.installedApps.isEmpty && model.isPaired { await model.loadInstalledApps() } }
         }
     }
     private var pairing: some View {
@@ -219,4 +279,13 @@ private struct EmberTVNativeAPKPicker: UIViewControllerRepresentable {
             onCancel()
         }
     }
+}
+
+
+private struct EmberTVBackupShareSheet: UIViewControllerRepresentable {
+    let url: URL
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: [url], applicationActivities: nil)
+    }
+    func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
 }
