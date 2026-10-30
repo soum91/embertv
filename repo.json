@@ -15,6 +15,17 @@
       "iconURL": "https://raw.githubusercontent.com/soum91/aukkhor/main/ios/Assets.xcassets/AppIcon.appiconset/AukkhorIcon.png",
       "versions": [
         {
+          "version": "0.3.0.3",
+          "buildVersion": "3",
+          "versionCode": 3,
+          "date": "2026-10-30",
+          "localizedDescription": "Aukkhor TV keyboard: D-pad typing, English/phonetic Bangla/direct Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection.",
+          "changelog": "Aukkhor TV keyboard: D-pad typing, English/phonetic Bangla/direct Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection.",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/aukkhor-tv-v0.3.0.3/Aukkhor-TV.apk",
+          "size": 37565,
+          "sha256": "f67e152f7e691ab87857d893456bebb09995c46786c340557954a611201e8974"
+        },
+        {
           "version": "0.3.0.2",
           "buildVersion": "2",
           "versionCode": 2,
