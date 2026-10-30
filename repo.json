@@ -14,6 +14,17 @@
       "category": "utilities",
       "versions": [
         {
+          "version": "0.1.0.14",
+          "buildVersion": "14",
+          "date": "2026-10-30",
+          "localizedDescription": "* feat(backup): export installed user and system APKs, split archives, and iPhone sharing\n* catalog: sync signed Drift Android TV release\n* ci(drift): sign Android TV releases with existing EmberTV key and sync catalog\n* ci(catalog): verify Drift catalog sync on workflow changes\n* feat(catalog): sync only originally signed Drift Android TV APK releases\n* catalog: publish EmberTV 0.1.0.13",
+          "changelog": "* feat(backup): export installed user and system APKs, split archives, and iPhone sharing\n* catalog: sync signed Drift Android TV release\n* ci(drift): sign Android TV releases with existing EmberTV key and sync catalog\n* ci(catalog): verify Drift catalog sync on workflow changes\n* feat(catalog): sync only originally signed Drift Android TV APK releases\n* catalog: publish EmberTV 0.1.0.13",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/tv-v0.1.0.14/EmberTV.apk",
+          "size": 105908,
+          "versionCode": 14,
+          "sha256": "a6431023cb714d62f1c2619bd57e0ee0294fc352f12d8acc1cb12f663463d4b7"
+        },
+        {
           "version": "0.1.0.13",
           "buildVersion": "13",
           "date": "2026-10-30",
