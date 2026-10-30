@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import UniformTypeIdentifiers
 
 struct ContentView: View {
@@ -17,11 +18,22 @@ struct ContentView: View {
         }
         .preferredColorScheme(.dark)
         .onChange(of: selectedTab) { _ in sourceFieldFocused = false }
-        .fileImporter(isPresented: $chooseAPK, allowedContentTypes: [UTType(filenameExtension: "apk") ?? .data]) { result in
-            switch result {
-            case .success(let url): Task { await model.upload(file: url) }
-            case .failure(let error): model.status = error.localizedDescription
-            }
+        .sheet(isPresented: $chooseAPK) {
+            EmberTVNativeAPKPicker(
+                onPick: { file in
+                    chooseAPK = false
+                    guard file.pathExtension.lowercased() == "apk" else {
+                        model.status = "Choose an .apk file, not \(file.lastPathComponent)."
+                        return
+                    }
+                    model.status = "Selected \(file.lastPathComponent) from Files."
+                    Task { await model.upload(file: file) }
+                },
+                onCancel: {
+                    chooseAPK = false
+                    model.status = "APK selection cancelled."
+                }
+            )
         }
         .sheet(item: $showDetails) { app in
             NavigationStack {
@@ -165,6 +177,45 @@ struct ContentView: View {
                 if model.isWorking { ProgressView() }
                 Text(model.status).font(.footnote).foregroundStyle(.secondary)
             }
+        }
+    }
+}
+
+private struct EmberTVNativeAPKPicker: UIViewControllerRepresentable {
+    let onPick: (URL) -> Void
+    let onCancel: () -> Void
+
+    func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
+        // Unknown .apk UTTypes can make SwiftUI fileImporter grey out valid files.
+        // Allow the system's broad file type and check the extension on selection.
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
+        picker.allowsMultipleSelection = false
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ controller: UIDocumentPickerViewController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onPick: onPick, onCancel: onCancel)
+    }
+
+    final class Coordinator: NSObject, UIDocumentPickerDelegate {
+        let onPick: (URL) -> Void
+        let onCancel: () -> Void
+
+        init(onPick: @escaping (URL) -> Void, onCancel: @escaping () -> Void) {
+            self.onPick = onPick
+            self.onCancel = onCancel
+        }
+
+        func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+            guard let file = urls.first else { onCancel(); return }
+            onPick(file)
+        }
+
+        func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+            onCancel()
         }
     }
 }
