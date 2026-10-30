@@ -6,28 +6,6 @@
   "sourceURL": "https://raw.githubusercontent.com/soum91/embertv/main/repo.json",
   "apps": [
     {
-      "name": "Drift",
-      "packageName": "dev.soum91.drift",
-      "developerName": "soum91",
-      "subtitle": "Android TV direct file transfer, currently diagnostic APK only",
-      "localizedDescription": "Build 2 is the existing signed radio diagnostic; transfer functionality is under development. Do not expect this APK to receive files.",
-      "category": "utilities",
-      "repositoryURL": "https://github.com/soum91/drift",
-      "versions": [
-        {
-          "version": "0.1.0.2",
-          "versionCode": 2,
-          "buildVersion": "2",
-          "date": "2026-10-23",
-          "localizedDescription": "Read-only USB Wi-Fi radio diagnostic. No AirDrop or file transfer in this installed build.",
-          "changelog": "Read-only USB Wi-Fi radio diagnostic. No AirDrop or file transfer in this installed build.",
-          "downloadURL": "https://raw.githubusercontent.com/soum91/drift/main/artifacts/Drift-0.1.0-build-2.apk",
-          "size": 275130,
-          "sha256": "74464e3d60c7e04b1de64e198c088d4665ec3ba80ab83a6b042f7a5fa885e9ba"
-        }
-      ]
-    },
-    {
       "name": "EmberTV",
       "packageName": "com.soum91.embertv",
       "developerName": "soum91",
@@ -35,6 +13,17 @@
       "localizedDescription": "Browse JSON catalogs, install signed APKs, and pair an iPhone companion.",
       "category": "utilities",
       "versions": [
+        {
+          "version": "0.1.0.13",
+          "buildVersion": "13",
+          "date": "2026-10-30",
+          "localizedDescription": "* feat(connection): persistent TV receiver, background APK installs, and pairing diagnostics\n* docs(ios): preserve native Files picker convention\n* catalog: publish Companion 0.1.0.11\n* fix(ios): use native document picker for APK files\n* catalog: publish Companion 0.1.0.10\n* fix(ios): keep Drift transfer in its own standalone companion\n* catalog: publish Companion 0.1.0.9\n* feat(ios): integrate Drift Wi-Fi and Bluetooth transfers into companion\n* catalog: publish EmberTV 0.1.0.12",
+          "changelog": "* feat(connection): persistent TV receiver, background APK installs, and pairing diagnostics\n* docs(ios): preserve native Files picker convention\n* catalog: publish Companion 0.1.0.11\n* fix(ios): use native document picker for APK files\n* catalog: publish Companion 0.1.0.10\n* fix(ios): keep Drift transfer in its own standalone companion\n* catalog: publish Companion 0.1.0.9\n* feat(ios): integrate Drift Wi-Fi and Bluetooth transfers into companion\n* catalog: publish EmberTV 0.1.0.12",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/tv-v0.1.0.13/EmberTV.apk",
+          "size": 96940,
+          "versionCode": 13,
+          "sha256": "d2c07f5074e430ad940459601f28c2fa511fbbc7bac55dde973f1712fae91c50"
+        },
         {
           "version": "0.1.0.12",
           "buildVersion": "12",
@@ -114,6 +103,28 @@
         }
       ],
       "iconURL": "https://raw.githubusercontent.com/soum91/embertv/main/assets/embertv-flame-tv-icon.png"
+    },
+    {
+      "name": "Drift",
+      "packageName": "dev.soum91.drift",
+      "developerName": "soum91",
+      "subtitle": "Android TV direct file transfer, currently diagnostic APK only",
+      "localizedDescription": "Build 2 is the existing signed radio diagnostic; transfer functionality is under development. Do not expect this APK to receive files.",
+      "category": "utilities",
+      "repositoryURL": "https://github.com/soum91/drift",
+      "versions": [
+        {
+          "version": "0.1.0.2",
+          "versionCode": 2,
+          "buildVersion": "2",
+          "date": "2026-10-23",
+          "localizedDescription": "Read-only USB Wi-Fi radio diagnostic. No AirDrop or file transfer in this installed build.",
+          "changelog": "Read-only USB Wi-Fi radio diagnostic. No AirDrop or file transfer in this installed build.",
+          "downloadURL": "https://raw.githubusercontent.com/soum91/drift/main/artifacts/Drift-0.1.0-build-2.apk",
+          "size": 275130,
+          "sha256": "74464e3d60c7e04b1de64e198c088d4665ec3ba80ab83a6b042f7a5fa885e9ba"
+        }
+      ]
     },
     {
       "name": "Reynard TV",
