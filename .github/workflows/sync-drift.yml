@@ -2,6 +2,11 @@ name: Sync verified Drift Android TV releases
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/sync_drift_android.py'
+      - '.github/workflows/sync-drift.yml'
   schedule:
     - cron: '23 */6 * * *'
 
