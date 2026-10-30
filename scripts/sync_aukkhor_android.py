@@ -27,14 +27,14 @@ def main():
             "packageName":PACKAGE,
             "developerName":"soum91",
             "subtitle":"Type on iPhone when a TV text field opens",
-            "localizedDescription":"Native Android TV D-pad keyboard and paired iPhone remote typing. English and Bangla, secure local-network pairing.",
+            "localizedDescription":"Native Android TV D-pad keyboard and paired iPhone remote typing. English, phonetic Bangla and direct Bangla, secure local-network pairing.",
             "category":"utilities",
             "iconURL":ICON,
             "versions":[]
         }
     app["iconURL"]=ICON
     version=f"0.3.0.{args.build}"
-    details="Aukkhor TV keyboard: D-pad typing, English/Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection."
+    details="Aukkhor TV keyboard: D-pad typing, English/phonetic Bangla/direct Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection."
     item={
         "version":version,
         "buildVersion":str(args.build),
