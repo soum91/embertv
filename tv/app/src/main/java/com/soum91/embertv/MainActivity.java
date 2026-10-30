@@ -370,13 +370,16 @@ public final class MainActivity extends Activity {
         String name = String.valueOf(p.applicationInfo.loadLabel(getPackageManager()));
         new AlertDialog.Builder(this)
             .setTitle(name)
-            .setMessage("Package: " + p.packageName + "\nVersion: " + p.versionName +
-                "\nType: " + (system ? "System" : "User") +
-                "\nAPK files: " + (1 + splits) +
-                "\n\nBackups include executable APKs only, not app data, credentials or OBB assets.")
-            .setItems(new String[]{"Export APK / split archive to USB or Files", "Launch app"}, (dialog, which) -> {
+            .setItems(new String[]{"Export APK / split archive to USB or Files", "Launch app", "Package information"}, (dialog, which) -> {
                 if (which == 0) exportPackage(p);
-                else {
+                else if (which == 2) {
+                    new AlertDialog.Builder(this).setTitle(name)
+                        .setMessage("Package: " + p.packageName + "\nVersion: " + p.versionName +
+                            "\nType: " + (system ? "System" : "User") +
+                            "\nAPK files: " + (1 + splits) +
+                            "\n\nBackups contain APK files only, not private app data.")
+                        .setPositiveButton("OK", null).show();
+                } else {
                     Intent launch = getPackageManager().getLaunchIntentForPackage(p.packageName);
                     if (launch != null) startActivity(launch);
                     else setFeedback("No launch activity for " + p.packageName);
