@@ -8,7 +8,7 @@ An Android TV APK catalog and installer with an iOS companion. EmberTV reads pub
 
 - Remote-friendly navigation: Discover, Installed, Sources, Pair iPhone, and About.
 - Multiple persistent sources. Paste a direct HTTPS JSON catalog URL or a public GitHub repository URL. GitHub repositories without a JSON feed are browsed through their published `.apk` release assets, with SHA-256 digests when GitHub provides them.
-- One consolidated EmberTV JSON catalog for EmberTV, Drift, Reynard TV and Amazon Music TV Plus, plus built-in GitHub release discovery for Reynard and Amazon Music TV Plus. Drift's current catalog entry is still its **build 2 radio diagnostic**, not the new transfer source, until a build 3 APK signed with its original key is released.
+- One consolidated EmberTV JSON catalog for EmberTV, Drift, Reynard TV and Amazon Music TV Plus, plus built-in GitHub release discovery for Reynard and Amazon Music TV Plus. Drift's current catalog entry is still its **build 2 radio diagnostic**, not the new transfer source, until a build 3 APK signed with its original key is released. The `Sync verified Drift Android TV releases` workflow checks for new signed Drift releases every six hours, confirms the original signing certificate and package/version, then updates this catalog automatically.
 - Both EmberTV catalogs and AltStore-style `apps[].versions[]` entries with APK `downloadURL` links. iOS-only IPA entries are ignored.
 - Installed version comparisons using Android `versionCode` and public signing certificates. A mismatch stops before installation and does not remove app data.
 - HTTPS download, optional SHA-256 verification, Android PackageInstaller, and explicit TV confirmation.
