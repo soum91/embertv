@@ -14,6 +14,16 @@
       "category": "utilities",
       "versions": [
         {
+          "version": "0.1.0.12",
+          "buildVersion": "12",
+          "date": "2026-10-30",
+          "localizedDescription": "* feat(connection): persistent TV receiver, background APK installs, and pairing diagnostics\n* docs(ios): preserve native Files picker convention\n* catalog: publish Companion 0.1.0.11",
+          "changelog": "* feat(connection): persistent TV receiver, background APK installs, and pairing diagnostics\n* docs(ios): preserve native Files picker convention\n* catalog: publish Companion 0.1.0.11",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/companion-v0.1.0.12/EmberTV-Companion.ipa",
+          "size": 319641,
+          "minOSVersion": "16.0"
+        },
+        {
           "version": "0.1.0.11",
           "buildVersion": "11",
           "date": "2026-10-30",
