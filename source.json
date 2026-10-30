@@ -14,6 +14,16 @@
       "category": "utilities",
       "versions": [
         {
+          "version": "0.1.0.13",
+          "buildVersion": "13",
+          "date": "2026-10-30",
+          "localizedDescription": "* feat(backup): export installed user and system APKs, split archives, and iPhone sharing\n* catalog: sync signed Drift Android TV release\n* ci(drift): sign Android TV releases with existing EmberTV key and sync catalog\n* ci(catalog): verify Drift catalog sync on workflow changes\n* feat(catalog): sync only originally signed Drift Android TV APK releases\n* catalog: publish EmberTV 0.1.0.13\n* catalog: publish Companion 0.1.0.12",
+          "changelog": "* feat(backup): export installed user and system APKs, split archives, and iPhone sharing\n* catalog: sync signed Drift Android TV release\n* ci(drift): sign Android TV releases with existing EmberTV key and sync catalog\n* ci(catalog): verify Drift catalog sync on workflow changes\n* feat(catalog): sync only originally signed Drift Android TV APK releases\n* catalog: publish EmberTV 0.1.0.13\n* catalog: publish Companion 0.1.0.12",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/companion-v0.1.0.13/EmberTV-Companion.ipa",
+          "size": 363254,
+          "minOSVersion": "16.0"
+        },
+        {
           "version": "0.1.0.12",
           "buildVersion": "12",
           "date": "2026-10-30",
