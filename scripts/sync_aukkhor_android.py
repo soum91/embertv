@@ -34,7 +34,7 @@ def main():
         }
     app["iconURL"]=ICON
     version=f"0.3.0.{args.build}"
-    details="Aukkhor TV keyboard: D-pad typing, English/phonetic Bangla/direct Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection."
+    details="Aukkhor TV keyboard: D-pad typing, English/phonetic Bangla/direct Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection, approved fused A/অ app icon."
     item={
         "version":version,
         "buildVersion":str(args.build),
