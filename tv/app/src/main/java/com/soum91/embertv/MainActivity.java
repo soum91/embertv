@@ -76,7 +76,7 @@ public final class MainActivity extends Activity {
     @Override public void onCreate(Bundle b) {
         super.onCreate(b); current = this;
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-        buildShell(); show("Discover"); refresh();
+        buildShell(); show("Discover"); if (getSharedPreferences("embertv_updates", MODE_PRIVATE).getBoolean("refresh_on_launch", true)) refresh();
         if (!lastMessage.equals("Ready")) setFeedback(lastMessage);
         if (getSharedPreferences("embertv_receiver", MODE_PRIVATE).getBoolean("enabled", true)) startBackgroundReceiver();
         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
@@ -275,6 +275,36 @@ public final class MainActivity extends Activity {
                 .setNegativeButton("Cancel", null)
                 .setPositiveButton("Download & install", (d, which) -> installFromCatalog(app)).show();
     }
+    private void updatePreferences(Catalog.App app) {
+        final android.content.SharedPreferences prefs = getSharedPreferences("embertv_updates", MODE_PRIVATE);
+        final String key = "mode_" + app.packageName;
+        final String[] modes = {"Manual", "Notify only", "Auto-download (approval required)"};
+        int selected = prefs.getInt(key, 1);
+        new AlertDialog.Builder(this).setTitle(app.name + " update policy")
+            .setSingleChoiceItems(modes, selected, (dialog, choice) -> {
+                prefs.edit().putInt(key, choice).apply();
+                dialog.dismiss();
+                setFeedback(app.name + ": " + modes[choice]);
+            }).setNegativeButton("Cancel", null).show();
+    }
+    private void updateSettings() {
+        final android.content.SharedPreferences prefs = getSharedPreferences("embertv_updates", MODE_PRIVATE);
+        LinearLayout settings = new LinearLayout(this);
+        settings.setOrientation(LinearLayout.VERTICAL);
+        android.widget.CheckBox enabled = new android.widget.CheckBox(this);
+        enabled.setText("Refresh repositories automatically when EmberTV opens");
+        enabled.setChecked(prefs.getBoolean("refresh_on_launch", true));
+        settings.addView(enabled);
+        android.widget.CheckBox background = new android.widget.CheckBox(this);
+        background.setText("Check for updates periodically while EmberTV is open");
+        background.setChecked(prefs.getBoolean("periodic", true));
+        settings.addView(background);
+        new AlertDialog.Builder(this).setTitle("Repository updates").setView(settings)
+            .setPositiveButton("Save", (d,w) -> prefs.edit()
+                .putBoolean("refresh_on_launch", enabled.isChecked())
+                .putBoolean("periodic", background.isChecked()).apply())
+            .setNegativeButton("Cancel", null).show();
+    }
     private void refresh() {
         setFeedback("Refreshing GitHub sources...");
         network.execute(() -> {
@@ -294,7 +324,7 @@ public final class MainActivity extends Activity {
             });
         });
     }
-    private void showSources() {
+    private void showSources() {\n        action("Automatic refresh settings", this::updateSettings);
         paragraph("Add a public GitHub repository URL or direct HTTPS JSON catalog URL.");
         action("＋  Add source", () -> {
             EditText input = new EditText(this); input.setSingleLine(true); input.setHint("https://github.com/owner/repo");
