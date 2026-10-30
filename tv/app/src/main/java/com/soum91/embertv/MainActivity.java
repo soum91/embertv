@@ -62,6 +62,7 @@ public final class MainActivity extends Activity {
     private static volatile String lastMessage = "Ready";
     private volatile boolean visible;
     private final ExecutorService network = Executors.newSingleThreadExecutor();
+    private static final ExecutorService backups = Executors.newSingleThreadExecutor();
     private final ExecutorService icons = Executors.newFixedThreadPool(4);
     private final Map<String, Bitmap> iconCache = new ConcurrentHashMap<>();
     private final List<Catalog.App> apps = new ArrayList<>();
@@ -95,7 +96,7 @@ public final class MainActivity extends Activity {
         final String packageName = pendingExportPackage;
         final Uri destination = data.getData();
         if (packageName.isEmpty()) return;
-        network.execute(() -> {
+        backups.execute(() -> {
             try (OutputStream out = getContentResolver().openOutputStream(destination, "w")) {
                 if (out == null) throw new IllegalStateException("Document provider did not open the destination");
                 int count = ApkBackup.write(this, packageName, out);
@@ -324,7 +325,8 @@ public final class MainActivity extends Activity {
             });
         });
     }
-    private void showSources() {\n        action("Automatic refresh settings", this::updateSettings);
+    private void showSources() {
+        action("Automatic refresh settings", this::updateSettings);
         paragraph("Add a public GitHub repository URL or direct HTTPS JSON catalog URL.");
         action("＋  Add source", () -> {
             EditText input = new EditText(this); input.setSingleLine(true); input.setHint("https://github.com/owner/repo");
@@ -342,7 +344,7 @@ public final class MainActivity extends Activity {
         }
     }
     private void showInstalled() {
-        paragraph("Back up installed APK packages, including system apps. Split apps export as .apks archives. Private app data and signing keys are not included.");
+        paragraph("Select an app, then Export to Downloads. No file manager or document picker is required. Split apps export as .apks archives. Private app data is not included.");
         String[] filters = {"User apps", "System apps", "All apps"};
         action("Showing: " + filters[installedFilter] + "  •  Change filter", () -> {
             installedFilter = (installedFilter + 1) % filters.length;
@@ -400,9 +402,10 @@ public final class MainActivity extends Activity {
         String name = String.valueOf(p.applicationInfo.loadLabel(getPackageManager()));
         new AlertDialog.Builder(this)
             .setTitle(name)
-            .setItems(new String[]{"Export APK / split archive to USB or Files", "Launch app", "Package information"}, (dialog, which) -> {
+            .setItems(new String[]{"Export to Downloads (no file picker)", "Save elsewhere (requires Files app)", "Launch app", "Package information"}, (dialog, which) -> {
                 if (which == 0) exportPackage(p);
-                else if (which == 2) {
+                else if (which == 1) exportPackageWithPicker(p);
+                else if (which == 3) {
                     new AlertDialog.Builder(this).setTitle(name)
                         .setMessage("Package: " + p.packageName + "\nVersion: " + p.versionName +
                             "\nType: " + (system ? "System" : "User") +
@@ -417,19 +420,81 @@ public final class MainActivity extends Activity {
             }).show();
     }
     private void exportPackage(PackageInfo p) {
+        final String packageName = p.packageName;
+        final String filename = backupFilename(p);
+        setFeedback("Exporting " + filename + " to Downloads/EmberTV...");
+        backups.execute(() -> {
+            try {
+                if (Build.VERSION.SDK_INT >= 29) {
+                    android.content.ContentValues values = new android.content.ContentValues();
+                    values.put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, filename);
+                    values.put(android.provider.MediaStore.MediaColumns.MIME_TYPE,
+                            filename.endsWith(".apks") ? "application/zip" : "application/vnd.android.package-archive");
+                    values.put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH,
+                            android.os.Environment.DIRECTORY_DOWNLOADS + "/EmberTV/");
+                    values.put(android.provider.MediaStore.MediaColumns.IS_PENDING, 1);
+                    Uri uri = getContentResolver().insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                    if (uri == null) throw new IllegalStateException("Downloads storage is unavailable");
+                    try {
+                        int count;
+                        try (OutputStream out = getContentResolver().openOutputStream(uri, "w")) {
+                            if (out == null) throw new IllegalStateException("Could not open Downloads for writing");
+                            count = ApkBackup.write(getApplicationContext(), packageName, out);
+                            out.flush();
+                        }
+                        android.content.ContentValues ready = new android.content.ContentValues();
+                        ready.put(android.provider.MediaStore.MediaColumns.IS_PENDING, 0);
+                        getContentResolver().update(uri, ready, null, null);
+                        report("Backup saved: Downloads/EmberTV/" + filename +
+                                (count > 1 ? " (" + count + " APK components)" : ""));
+                    } catch (Exception error) {
+                        try { getContentResolver().delete(uri, null, null); } catch (Exception ignored) { }
+                        throw error;
+                    }
+                } else {
+                    // Android 9: app-specific external storage needs no storage permission.
+                    File root = getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS);
+                    if (root == null) throw new IllegalStateException("No external storage available");
+                    File dir = new File(root, "EmberTV");
+                    if (!dir.exists() && !dir.mkdirs()) throw new IllegalStateException("Cannot create backup folder");
+                    File destination = new File(dir, filename);
+                    try (OutputStream out = new java.io.FileOutputStream(destination)) {
+                        ApkBackup.write(getApplicationContext(), packageName, out);
+                    } catch (Exception error) {
+                        destination.delete();
+                        throw error;
+                    }
+                    report("Backup saved in app storage: " + destination.getAbsolutePath() +
+                            " (use EmberTV Companion if it is not visible in Files)");
+                }
+            } catch (Exception error) {
+                report("APK export failed: " + error.getMessage());
+            }
+        });
+    }
+    private String backupFilename(PackageInfo p) {
         boolean split = p.applicationInfo.splitSourceDirs != null && p.applicationInfo.splitSourceDirs.length > 0;
         String version = (p.versionName == null ? "installed" : p.versionName).replaceAll("[^a-zA-Z0-9._-]", "_");
-        String filename = p.packageName + "-" + version + (split ? ".apks" : ".apk");
+        return p.packageName + "-" + version + (split ? ".apks" : ".apk");
+    }
+    private void exportPackageWithPicker(PackageInfo p) {
+        String filename = backupFilename(p);
+        boolean split = filename.endsWith(".apks");
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType(split ? "application/zip" : "application/vnd.android.package-archive");
         intent.putExtra(Intent.EXTRA_TITLE, filename);
         pendingExportPackage = p.packageName;
+        if (intent.resolveActivity(getPackageManager()) == null) {
+            setFeedback("No Files document picker on this TV. Saving to Downloads instead.");
+            exportPackage(p);
+            return;
+        }
         try {
             startActivityForResult(intent, EXPORT_DOCUMENT_REQUEST);
-        } catch (Exception e) {
-            setFeedback("No file-save picker on this TV: " + e.getMessage() +
-                ". You can export this app using EmberTV Companion on iPhone instead.");
+        } catch (Exception error) {
+            setFeedback("Files picker unavailable. Saving to Downloads instead.");
+            exportPackage(p);
         }
     }
 
