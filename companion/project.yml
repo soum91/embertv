@@ -23,8 +23,7 @@ targets:
           - UIInterfaceOrientationPortrait
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
-        NSLocalNetworkUsageDescription: EmberTV connects to your Android TV for app installation and Drift file transfer.
-        NSBluetoothAlwaysUsageDescription: Drift discovers your Android TV and transfers small files over Bluetooth Low Energy.
+        NSLocalNetworkUsageDescription: EmberTV connects to your paired Android TV to send installation requests and APKs.
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
     settings:

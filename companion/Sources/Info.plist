@@ -12,8 +12,7 @@
     <key>CFBundleShortVersionString</key><string>$(MARKETING_VERSION)</string>
     <key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
     <key>LSRequiresIPhoneOS</key><true/>
-    <key>NSLocalNetworkUsageDescription</key><string>EmberTV connects to your Android TV for app installation and Drift file transfer.</string>
-    <key>NSBluetoothAlwaysUsageDescription</key><string>Drift finds your Android TV and sends small files over Bluetooth Low Energy when Wi-Fi is unavailable.</string>
+    <key>NSLocalNetworkUsageDescription</key><string>EmberTV connects to your paired Android TV to send installation requests and APKs.</string>
     <key>NSAppTransportSecurity</key><dict><key>NSAllowsLocalNetworking</key><true/></dict>
     <key>UIRequiredDeviceCapabilities</key><array><string>arm64</string></array>
     <key>UILaunchScreen</key><dict/>

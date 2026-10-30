@@ -5,9 +5,6 @@ struct ContentView: View {
     @EnvironmentObject var model: TVModel
     @State private var selectedTab = 0
     @State private var chooseAPK = false
-    @State private var chooseDriftFile = false
-    @State private var driftMode = "wifi"
-    @StateObject private var drift = DriftModel()
     @State private var showDetails: TVApp?
     @FocusState private var sourceFieldFocused: Bool
 
@@ -17,7 +14,6 @@ struct ContentView: View {
             transfer.tabItem { Label("Send APK", systemImage: "arrow.up.doc.fill") }.tag(1)
             pairing.tabItem { Label("Connect", systemImage: "tv") }.tag(2)
             sources.tabItem { Label("Sources", systemImage: "tray.full.fill") }.tag(3)
-            driftTransfer.tabItem { Label("Drift", systemImage: "arrow.left.arrow.right.square") }.tag(4)
         }
         .preferredColorScheme(.dark)
         .onChange(of: selectedTab) { _ in sourceFieldFocused = false }
@@ -25,14 +21,6 @@ struct ContentView: View {
             switch result {
             case .success(let url): Task { await model.upload(file: url) }
             case .failure(let error): model.status = error.localizedDescription
-            }
-        }
-        .fileImporter(isPresented: $chooseDriftFile, allowedContentTypes: [.item]) { result in
-            switch result {
-            case .success(let url):
-                if driftMode == "wifi" { Task { await drift.sendWiFi(url) } }
-                else { drift.sendBluetooth(url) }
-            case .failure(let error): drift.status = error.localizedDescription
             }
         }
         .sheet(item: $showDetails) { app in
@@ -112,55 +100,6 @@ struct ContentView: View {
                 }
                 statusRow
             }
-            .safeAreaInset(edge: .bottom, spacing: 0) { scrollClearance }
-        }
-    }
-    private var driftTransfer: some View {
-        VStack(spacing: 0) {
-            pageHeader("Drift transfer")
-            Form {
-                Section("Connection") {
-                    Picker("Transfer mode", selection: $driftMode) {
-                        Text("Wi-Fi").tag("wifi")
-                        Text("Bluetooth").tag("bluetooth")
-                    }.pickerStyle(.segmented)
-                    if driftMode == "wifi" {
-                        TextField("TV IPv4 address", text: $drift.address)
-                            .keyboardType(.numbersAndPunctuation).textInputAutocapitalization(.never).autocorrectionDisabled()
-                        TextField("Six-digit code from Drift on TV", text: $drift.code).keyboardType(.numberPad)
-                        Button("Pair with Drift") { Task { await drift.pairWiFi() } }.disabled(drift.busy)
-                    } else {
-                        Button("Find nearby Drift TV") { drift.scanBluetooth() }.disabled(drift.busy)
-                        ForEach(drift.peers) { peer in
-                            Button("Connect: \(peer.name)") { drift.connectBluetooth(peer.id) }.disabled(drift.busy)
-                        }
-                        if !drift.connectedName.isEmpty {
-                            Label("Connected: \(drift.connectedName)", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
-                        }
-                    }
-                }
-                Section("Send files") {
-                    Button { chooseDriftFile = true } label: { Label("Choose any file", systemImage: "doc.badge.arrow.up") }
-                        .disabled(drift.busy)
-                    if drift.busy { ProgressView(value: drift.progress) }
-                    Text(driftMode == "wifi" ? "For large files. Supports the TV's private ad hoc Wi-Fi network or the same trusted LAN. Accept each file on TV." :
-                         "For files up to 8 MiB. Requires TV Bluetooth LE peripheral advertising, encryption, and an on-TV approval.")
-                        .font(.footnote).foregroundStyle(.secondary)
-                }
-                Section("Status") { Text(drift.status).font(.footnote).foregroundStyle(.secondary) }
-                Section("How to connect") {
-                    if driftMode == "wifi" {
-                        Text("1. Open Drift on TV and choose ad hoc Wi-Fi or existing network.")
-                        Text("2. For ad hoc mode, join the displayed TV Wi-Fi network in iPhone Settings first.")
-                        Text("3. Enter the TV IP and code above, pair, then send your file.")
-                    } else {
-                        Text("1. Open Drift on TV and start its Bluetooth LE receiver.")
-                        Text("2. Scan and connect here. Accept any iOS Bluetooth pairing prompt.")
-                        Text("3. Choose a small file and accept it with the TV remote.")
-                    }
-                }
-            }
-            .scrollDismissesKeyboard(.interactively)
             .safeAreaInset(edge: .bottom, spacing: 0) { scrollClearance }
         }
     }
