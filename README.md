@@ -20,6 +20,8 @@ The iOS 16+ EmberTV companion browses JSON and public GitHub APK release sources
 
 Drift file transfer is handled by its own **standalone Drift Companion** app, built and released from `soum91/drift`; it is intentionally not a tab in EmberTV Companion. EmberTV's consolidated Android catalog still lists the Drift TV APK.
 
+**iOS file-picker convention:** Use native `UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)` with a delegate callback, and validate the file extension after selection. Do not constrain a SwiftUI `fileImporter` to a dynamic APK/IPA `UTType(filenameExtension:)`: this can leave valid files greyed out or prevent the selection callback. Keep this native-picker approach for future EmberTV iOS file imports.
+
 ## JSON format
 
 See [`repo.json`](repo.json). Each entry should provide a `packageName` and a `versions` array, where each version contains `version`, `versionCode`, `downloadURL` and optionally `sha256` and `changelog`. `source.json`-style catalogs with `bundleIdentifier` and `localizedDescription` are also accepted when the release URL points to an APK. The installed APK manifest, not JSON, ultimately decides the package name/version/signature.
