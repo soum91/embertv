@@ -108,11 +108,22 @@
       "name": "Drift",
       "packageName": "dev.soum91.drift",
       "developerName": "soum91",
-      "subtitle": "Android TV direct file transfer, currently diagnostic APK only",
-      "localizedDescription": "Build 2 is the existing signed radio diagnostic; transfer functionality is under development. Do not expect this APK to receive files.",
+      "subtitle": "Direct file transfer to Android TV",
+      "localizedDescription": "Signed Drift Android TV file receiver. Supports iPhone/Windows companion transfers on trusted local Wi-Fi, Wi-Fi Direct and compatible Bluetooth LE. Native AirDrop is not implemented.",
       "category": "utilities",
       "repositoryURL": "https://github.com/soum91/drift",
       "versions": [
+        {
+          "version": "0.1.1.24",
+          "versionCode": 24,
+          "buildVersion": "24",
+          "date": "2026-10-30",
+          "localizedDescription": "Signed Drift Android TV file receiver. Supports iPhone/Windows companion transfers on trusted local Wi-Fi, Wi-Fi Direct and compatible Bluetooth LE. Native AirDrop is not implemented.",
+          "changelog": "Signed Drift Android TV file receiver. Supports iPhone/Windows companion transfers on trusted local Wi-Fi, Wi-Fi Direct and compatible Bluetooth LE. Native AirDrop is not implemented.",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/android-v0.1.1.24/Drift-AndroidTV.apk",
+          "size": 283326,
+          "sha256": "8ec1a84a0a3b0876534a3aca9cdea1fab28566ebbc9edf8c7b28f8d5b9b01553"
+        },
         {
           "version": "0.1.0.2",
           "versionCode": 2,
