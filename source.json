@@ -14,6 +14,16 @@
       "category": "utilities",
       "versions": [
         {
+          "version": "0.1.0.11",
+          "buildVersion": "11",
+          "date": "2026-10-30",
+          "localizedDescription": "* fix(ios): use native document picker for APK files\n* catalog: publish Companion 0.1.0.10",
+          "changelog": "* fix(ios): use native document picker for APK files\n* catalog: publish Companion 0.1.0.10",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/companion-v0.1.0.11/EmberTV-Companion.ipa",
+          "size": 313015,
+          "minOSVersion": "16.0"
+        },
+        {
           "version": "0.1.0.10",
           "buildVersion": "10",
           "date": "2026-10-30",
