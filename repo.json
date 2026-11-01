@@ -6,29 +6,6 @@
   "sourceURL": "https://raw.githubusercontent.com/soum91/embertv/main/repo.json",
   "apps": [
     {
-      "name": "BridgeDeck TV",
-      "packageName": "com.soum91.bridgedeck.tv",
-      "developerName": "soum91",
-      "subtitle": "Discover your TV from BridgeDeck on iPhone",
-      "localizedDescription": "Background TV presence and discovery companion for BridgeDeck iPhone ADB manager. It cannot grant ADB authorization or execute privileged commands by itself.",
-      "category": "utilities",
-      "iconURL": "https://raw.githubusercontent.com/soum91/bridgedeck/main/ios/BridgeDeck/Assets.xcassets/AppIcon.appiconset/AppIcon.png",
-      "repositoryURL": "https://github.com/soum91/bridgedeck",
-      "versions": [
-        {
-          "version": "0.1.0.2",
-          "buildVersion": "2",
-          "versionCode": 2,
-          "date": "2026-11-01",
-          "localizedDescription": "BridgeDeck TV presence companion: native Leanback interface, local-network discovery and status reporting, starts on boot when permitted. ADB functions require separately authorized ADB-over-TCP access.",
-          "changelog": "BridgeDeck TV presence companion: native Leanback interface, local-network discovery and status reporting, starts on boot when permitted. ADB functions require separately authorized ADB-over-TCP access.",
-          "downloadURL": "https://github.com/soum91/embertv/releases/download/bridgedeck-tv-v0.1.0.2/BridgeDeck-TV.apk",
-          "size": 652694,
-          "sha256": "2a994dfa34ec97f2c5ba46edbe91b265cd6c43376235d01eb8a52dcd716f60d1"
-        }
-      ]
-    },
-    {
       "name": "Aukkhor TV Keyboard",
       "packageName": "dev.soum91.aukkhor.tv",
       "developerName": "soum91",
@@ -80,6 +57,29 @@
           "downloadURL": "https://github.com/soum91/embertv/releases/download/aukkhor-tv-v0.3.0.2/Aukkhor-TV.apk",
           "size": 33469,
           "sha256": "7add64e4b3ed51163e7e7c57ab2bd3387ebb145d332e08e2c5513c33dd000ee5"
+        }
+      ]
+    },
+    {
+      "name": "BridgeDeck TV",
+      "packageName": "com.soum91.bridgedeck.tv",
+      "developerName": "soum91",
+      "subtitle": "Discover your TV from BridgeDeck on iPhone",
+      "localizedDescription": "Background TV presence and discovery companion for BridgeDeck iPhone ADB manager. It cannot grant ADB authorization or execute privileged commands by itself.",
+      "category": "utilities",
+      "iconURL": "https://raw.githubusercontent.com/soum91/bridgedeck/main/ios/BridgeDeck/Assets.xcassets/AppIcon.appiconset/AppIcon.png",
+      "repositoryURL": "https://github.com/soum91/bridgedeck",
+      "versions": [
+        {
+          "version": "0.1.0.2",
+          "buildVersion": "2",
+          "versionCode": 2,
+          "date": "2026-11-01",
+          "localizedDescription": "BridgeDeck TV presence companion: native Leanback interface, local-network discovery and status reporting, starts on boot when permitted. ADB functions require separately authorized ADB-over-TCP access.",
+          "changelog": "BridgeDeck TV presence companion: native Leanback interface, local-network discovery and status reporting, starts on boot when permitted. ADB functions require separately authorized ADB-over-TCP access.",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/bridgedeck-tv-v0.1.0.2/BridgeDeck-TV.apk",
+          "size": 652694,
+          "sha256": "2a994dfa34ec97f2c5ba46edbe91b265cd6c43376235d01eb8a52dcd716f60d1"
         }
       ]
     },
