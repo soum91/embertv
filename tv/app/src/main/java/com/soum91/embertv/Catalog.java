@@ -24,6 +24,7 @@ final class Catalog {
     static final class Version {
         String name, url, sha256, changelog;
         long code;
+        boolean privateGitHubAsset;
     }
     static final class App {
         String name, packageName, summary, icon;
@@ -164,10 +165,19 @@ final class Catalog {
         return t.find() ? Long.parseLong(t.group(1)) : 0;
     }
     private static Version parse(JSONObject v) {
-        String url = v.optString("downloadURL", v.optString("apkURL", ""));
-        if (!url.startsWith("https://") || !url.toLowerCase(java.util.Locale.ROOT).split("\\?", 2)[0].endsWith(".apk")) return null;
         Version r = new Version();
-        r.url = url;
+        JSONObject privateAsset = v.optJSONObject("githubReleaseAsset");
+        if (privateAsset != null) {
+            String repository = privateAsset.optString("repository", "");
+            long assetId = privateAsset.optLong("assetId", 0);
+            if (!repository.matches("[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+") || assetId <= 0) return null;
+            r.url = "https://api.github.com/repos/" + repository + "/releases/assets/" + assetId;
+            r.privateGitHubAsset = true;
+        } else {
+            String url = v.optString("downloadURL", v.optString("apkURL", ""));
+            if (!url.startsWith("https://") || !url.toLowerCase(java.util.Locale.ROOT).split("\\?", 2)[0].endsWith(".apk")) return null;
+            r.url = url;
+        }
         r.name = v.optString("version", "0.0.0");
         r.code = v.optLong("versionCode", v.optLong("buildVersion", 0));
         r.sha256 = v.optString("sha256", "").toLowerCase(java.util.Locale.ROOT);

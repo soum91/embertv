@@ -42,6 +42,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.InputType;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -126,7 +127,7 @@ public final class MainActivity extends Activity {
             setFeedback("Receiver is starting. Please retry in a moment.");
             return;
         }
-        service.installer.fromUrl(app.latest.url, app.packageName, app.latest.sha256);
+        service.installer.fromUrl(app.latest.url, app.packageName, app.latest.sha256, app.latest.privateGitHubAsset);
     }
     private int dp(float v) { return (int)(v * getResources().getDisplayMetrics().density + 0.5f); }
     private GradientDrawable rounded(int color, int radius) { GradientDrawable d = new GradientDrawable(); d.setColor(color); d.setCornerRadius(dp(radius)); return d; }
@@ -327,6 +328,8 @@ public final class MainActivity extends Activity {
     }
     private void showSources() {
         action("Automatic refresh settings", this::updateSettings);
+        action("Private GitHub APK access: " + (InstallEngine.hasGithubToken(this) ? "Configured" : "Not configured"), this::githubAccessSettings);
+        paragraph("Public JSON catalogs can list private GitHub Release assets. Only EmberTV authenticates the APK download; never put a GitHub token in JSON. Other public APKs remain available without a token.");
         paragraph("Add a public GitHub repository URL or direct HTTPS JSON catalog URL.");
         action("＋  Add source", () -> {
             EditText input = new EditText(this); input.setSingleLine(true); input.setHint("https://github.com/owner/repo");
@@ -342,6 +345,30 @@ public final class MainActivity extends Activity {
                     .setMessage(source).setNegativeButton("Cancel", null)
                     .setPositiveButton("Remove", (d, w) -> { Catalog.remove(this, source); show("Sources"); refresh(); }).show());
         }
+    }
+    private void githubAccessSettings() {
+        EditText input = new EditText(this);
+        input.setSingleLine(true);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        input.setHint("Fine-grained GitHub token (not shown)");
+        input.setPadding(dp(18), dp(14), dp(18), dp(14));
+        new AlertDialog.Builder(this)
+            .setTitle("Private GitHub Release access")
+            .setMessage("Use a fine-grained token restricted to your private APK repository with Contents: Read-only. The token stays encrypted on this TV and is never included in the JSON feed.")
+            .setView(input)
+            .setPositiveButton("Save token", (dialog, which) -> {
+                try {
+                    InstallEngine.saveGithubToken(this, input.getText().toString());
+                    setFeedback("Private GitHub token stored on this TV");
+                } catch (Exception error) { setFeedback("GitHub token not saved: " + error.getMessage()); }
+                show("Sources");
+            })
+            .setNeutralButton("Clear token", (dialog, which) -> {
+                InstallEngine.clearGithubToken(this);
+                setFeedback("Private GitHub access removed from this TV");
+                show("Sources");
+            })
+            .setNegativeButton("Cancel", null).show();
     }
     private void showInstalled() {
         paragraph("Select an app, then Export to Downloads. No file manager or document picker is required. Split apps export as .apks archives. Private app data is not included.");

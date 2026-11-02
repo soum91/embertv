@@ -3,6 +3,9 @@ package com.soum91.embertv;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.security.keystore.KeyGenParameterSpec;
+import android.security.keystore.KeyProperties;
+import android.util.Base64;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -18,6 +21,12 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
+import java.security.KeyStore;
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -26,6 +35,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 final class InstallEngine {
+    private static final String GITHUB_KEY_ALIAS = "EmberTV-private-GitHub-token";
+    private static final String GITHUB_PREFS = "embertv_github_access";
     interface Progress { void status(String message); }
     private final Context context;
     private final Progress progress;
@@ -37,17 +48,20 @@ final class InstallEngine {
     void shutdown() { executor.shutdown(); }
 
     void fromUrl(String url, String expectedPackage, String sha256) {
+        fromUrl(url, expectedPackage, sha256, false);
+    }
+    void fromUrl(String url, String expectedPackage, String sha256, boolean privateGitHubAsset) {
         if (!checkPermission()) return;
         executor.execute(() -> {
             File file = new File(context.getCacheDir(), "download-" + UUID.randomUUID() + ".apk");
             try {
                 if (!url.startsWith("https://")) throw new IllegalArgumentException("HTTPS download required");
                 status("Downloading APK...");
-                HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
-                c.setConnectTimeout(15000); c.setReadTimeout(30000);
-                c.setRequestProperty("User-Agent", "EmberTV/0.1");
+                HttpURLConnection c = openDownload(url, privateGitHubAsset);
                 try {
                     if (c.getResponseCode() != 200 || !"https".equalsIgnoreCase(c.getURL().getProtocol())) throw new IllegalArgumentException("Download HTTP " + c.getResponseCode());
+                    if (privateGitHubAsset && c.getContentType() != null && c.getContentType().toLowerCase(Locale.ROOT).contains("json"))
+                        throw new IllegalArgumentException("GitHub returned release metadata, not an APK");
                     long length = c.getContentLengthLong();
                     if (length > 1_000_000_000L) throw new IllegalArgumentException("APK exceeds 1 GB");
                     try (InputStream in = c.getInputStream(); OutputStream out = new FileOutputStream(file)) {
@@ -67,6 +81,84 @@ final class InstallEngine {
             } catch (Exception e) { status("Install stopped: " + e.getMessage()); }
             finally { /* APK may be needed until session write completes; install() is synchronous. */ file.delete(); }
         });
+    }
+    private HttpURLConnection openDownload(String url, boolean privateGitHubAsset) throws Exception {
+        if (!privateGitHubAsset) {
+            HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+            c.setConnectTimeout(15000); c.setReadTimeout(30000);
+            c.setRequestProperty("User-Agent", "EmberTV/0.1");
+            return c;
+        }
+        if (!url.matches("https://api\\.github\\.com/repos/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/releases/assets/[1-9][0-9]*"))
+            throw new IllegalArgumentException("Untrusted private GitHub release URL");
+        String token = githubToken(context);
+        if (token.isEmpty()) throw new IllegalArgumentException("Private GitHub access needs a token in Sources");
+        HttpURLConnection api = (HttpURLConnection) new URL(url).openConnection();
+        api.setConnectTimeout(15000); api.setReadTimeout(30000);
+        api.setInstanceFollowRedirects(false);
+        api.setRequestProperty("User-Agent", "EmberTV/0.1");
+        api.setRequestProperty("Accept", "application/octet-stream");
+        api.setRequestProperty("Authorization", "Bearer " + token);
+        int status = api.getResponseCode();
+        if (status == 401 || status == 403 || status == 404) {
+            api.disconnect();
+            throw new IllegalArgumentException("Private GitHub asset inaccessible (" + status + "); check token and repository access");
+        }
+        if (status == 200) return api;
+        if (status != 302 && status != 301 && status != 307 && status != 308) {
+            api.disconnect();
+            throw new IllegalArgumentException("GitHub download HTTP " + status);
+        }
+        // Release assets redirect to a short-lived storage URL. Never forward the token to that host.
+        String location = api.getHeaderField("Location");
+        api.disconnect();
+        if (location == null) throw new IllegalArgumentException("GitHub release redirect missing");
+        URL destination = new URL(new URL(url), location);
+        if (!"https".equalsIgnoreCase(destination.getProtocol())) throw new IllegalArgumentException("GitHub redirected to non-HTTPS");
+        HttpURLConnection download = (HttpURLConnection) destination.openConnection();
+        download.setConnectTimeout(15000); download.setReadTimeout(30000);
+        download.setRequestProperty("User-Agent", "EmberTV/0.1");
+        return download;
+    }
+    static boolean hasGithubToken(Context context) {
+        return context.getSharedPreferences(GITHUB_PREFS, Context.MODE_PRIVATE).contains("ciphertext");
+    }
+    static void clearGithubToken(Context context) {
+        context.getSharedPreferences(GITHUB_PREFS, Context.MODE_PRIVATE).edit().clear().apply();
+    }
+    static void saveGithubToken(Context context, String value) throws Exception {
+        String token = value.trim();
+        if (token.isEmpty() || token.contains("\n") || token.contains("\r")) throw new IllegalArgumentException("Invalid GitHub token");
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.ENCRYPT_MODE, githubKey());
+        byte[] encrypted = cipher.doFinal(token.getBytes(StandardCharsets.UTF_8));
+        context.getSharedPreferences(GITHUB_PREFS, Context.MODE_PRIVATE).edit()
+            .putString("iv", Base64.encodeToString(cipher.getIV(), Base64.NO_WRAP))
+            .putString("ciphertext", Base64.encodeToString(encrypted, Base64.NO_WRAP)).apply();
+    }
+    private static String githubToken(Context context) throws Exception {
+        android.content.SharedPreferences prefs = context.getSharedPreferences(GITHUB_PREFS, Context.MODE_PRIVATE);
+        String encrypted = prefs.getString("ciphertext", "");
+        if (encrypted.isEmpty()) return "";
+        try {
+            byte[] iv = Base64.decode(prefs.getString("iv", ""), Base64.NO_WRAP);
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            cipher.init(Cipher.DECRYPT_MODE, githubKey(), new GCMParameterSpec(128, iv));
+            return new String(cipher.doFinal(Base64.decode(encrypted, Base64.NO_WRAP)), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Stored GitHub token cannot be opened; clear and enter it again");
+        }
+    }
+    private static SecretKey githubKey() throws Exception {
+        KeyStore store = KeyStore.getInstance("AndroidKeyStore");
+        store.load(null);
+        if (store.containsAlias(GITHUB_KEY_ALIAS)) return (SecretKey) store.getKey(GITHUB_KEY_ALIAS, null);
+        KeyGenerator generator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
+        generator.init(new KeyGenParameterSpec.Builder(GITHUB_KEY_ALIAS,
+            KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
+            .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE).build());
+        return generator.generateKey();
     }
     void fromFile(File file, String expectedPackage, String sha256) {
         if (!checkPermission()) { file.delete(); return; }
