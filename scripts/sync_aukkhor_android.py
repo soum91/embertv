@@ -34,7 +34,7 @@ def main():
         }
     app["iconURL"]=ICON
     version=f"0.3.0.{args.build}"
-    details="Aukkhor TV keyboard: D-pad typing, English/phonetic Bangla/direct Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection, approved fused A/অ app icon."
+    details="Aukkhor TV keyboard: responsive D-pad navigation, hold-to-delete, action-aware Enter, English/phonetic Bangla/direct Bangla consonant and vowel layouts, optional number row, authenticated iPhone typing, password-field protection, approved fused A/অ app icon."
     item={
         "version":version,
         "buildVersion":str(args.build),
@@ -47,6 +47,14 @@ def main():
         "sha256":hashlib.sha256(raw).hexdigest()
     }
     app["versions"]=[item]+[v for v in app.get("versions",[]) if v.get("version")!=version][:29]
+    # Some TV installer clients use flat app fields, not versions[0].
+    # They must never keep offering an older signed keyboard APK.
+    app.update({
+        "version":item["version"], "buildVersion":item["buildVersion"],
+        "versionCode":item["versionCode"], "downloadURL":item["downloadURL"],
+        "size":item["size"], "sha256":item["sha256"],
+        "versionDate":item["date"], "versionDescription":details
+    })
     feed["apps"]=[app]+[a for a in feed["apps"] if a.get("packageName")!=PACKAGE]
     path.write_text(json.dumps(feed,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     print("Verified Aukkhor TV catalog entry "+version)

@@ -73,6 +73,10 @@ jobs:
         if: steps.info.outputs.publish == 'true'
         with:
           gradle-version: '8.10.2'
+      - name: Run Android TV keyboard regression tests before signing
+        if: steps.info.outputs.publish == 'true'
+        working-directory: aukkhor-source/android-tv
+        run: gradle --no-daemon :app:testReleaseUnitTest
       - name: Compile unsigned release APK
         if: steps.info.outputs.publish == 'true'
         working-directory: aukkhor-source/android-tv
@@ -120,7 +124,7 @@ jobs:
           SHA="$(git -C aukkhor-source rev-parse HEAD)"
           gh release create "$TAG" Aukkhor-TV.apk --repo "$GITHUB_REPOSITORY" \
             --title "Aukkhor TV 0.3.0.${{ steps.info.outputs.build }}" \
-            --notes "Built from soum91/aukkhor commit $SHA. Responsive remote-friendly TV pairing screen with readable fingerprint and no clipped setup buttons. Signed with EmberTV's permanent Android certificate for in-place updates. iPhone pairs directly to TV without Windows. iPhone prompts while Aukkhor is foregrounded."
+            --notes "Built from soum91/aukkhor commit $SHA. D-pad keyboard with focused TV-sized keys, hold-to-delete, action-aware Enter, English/phonetic Bangla/direct Bangla, optional number row and secure paired iPhone typing. Signed with EmberTV's permanent Android certificate for in-place updates. iPhone pairs directly to TV without Windows. iPhone prompts while Aukkhor is foregrounded."
       - name: Download previously published release when no build is needed
         if: steps.info.outputs.publish != 'true'
         env:
