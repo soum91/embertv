@@ -6,84 +6,6 @@
   "sourceURL": "https://raw.githubusercontent.com/soum91/embertv/main/repo.json",
   "apps": [
     {
-      "name": "Aukkhor TV Keyboard",
-      "packageName": "dev.soum91.aukkhor.tv",
-      "developerName": "soum91",
-      "subtitle": "Type on iPhone when a TV text field opens",
-      "localizedDescription": "Native Android TV D-pad keyboard and paired iPhone remote typing. English and Bangla, secure local-network pairing.",
-      "category": "utilities",
-      "iconURL": "https://raw.githubusercontent.com/soum91/aukkhor/main/ios/Assets.xcassets/AppIcon.appiconset/AukkhorIcon.png",
-      "versions": [
-        {
-          "version": "0.3.0.5",
-          "buildVersion": "5",
-          "versionCode": 5,
-          "date": "2026-11-01",
-          "localizedDescription": "Aukkhor TV keyboard: D-pad typing, English/phonetic Bangla/direct Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection, approved fused A/অ app icon.",
-          "changelog": "Aukkhor TV keyboard: D-pad typing, English/phonetic Bangla/direct Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection, approved fused A/অ app icon.",
-          "downloadURL": "https://github.com/soum91/embertv/releases/download/aukkhor-tv-v0.3.0.5/Aukkhor-TV.apk",
-          "size": 41661,
-          "sha256": "39ccadeb069cf905f21d16a90c0696c407d241b742d0caae47bb183f8c380487"
-        },
-        {
-          "version": "0.3.0.4",
-          "buildVersion": "4",
-          "versionCode": 4,
-          "date": "2026-10-31",
-          "localizedDescription": "Aukkhor TV keyboard: D-pad typing, English/phonetic Bangla/direct Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection, approved fused A/অ app icon.",
-          "changelog": "Aukkhor TV keyboard: D-pad typing, English/phonetic Bangla/direct Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection, approved fused A/অ app icon.",
-          "downloadURL": "https://github.com/soum91/embertv/releases/download/aukkhor-tv-v0.3.0.4/Aukkhor-TV.apk",
-          "size": 41661,
-          "sha256": "15842f54cc9b4d14dd839d14569d2ca9484fc12308a99ad9afb0d20dfbf1c869"
-        },
-        {
-          "version": "0.3.0.3",
-          "buildVersion": "3",
-          "versionCode": 3,
-          "date": "2026-10-30",
-          "localizedDescription": "Aukkhor TV keyboard: D-pad typing, English/phonetic Bangla/direct Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection.",
-          "changelog": "Aukkhor TV keyboard: D-pad typing, English/phonetic Bangla/direct Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection.",
-          "downloadURL": "https://github.com/soum91/embertv/releases/download/aukkhor-tv-v0.3.0.3/Aukkhor-TV.apk",
-          "size": 37565,
-          "sha256": "f67e152f7e691ab87857d893456bebb09995c46786c340557954a611201e8974"
-        },
-        {
-          "version": "0.3.0.2",
-          "buildVersion": "2",
-          "versionCode": 2,
-          "date": "2026-10-30",
-          "localizedDescription": "Aukkhor TV keyboard: D-pad typing, English/Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection.",
-          "changelog": "Aukkhor TV keyboard: D-pad typing, English/Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection.",
-          "downloadURL": "https://github.com/soum91/embertv/releases/download/aukkhor-tv-v0.3.0.2/Aukkhor-TV.apk",
-          "size": 33469,
-          "sha256": "7add64e4b3ed51163e7e7c57ab2bd3387ebb145d332e08e2c5513c33dd000ee5"
-        }
-      ]
-    },
-    {
-      "name": "BridgeDeck TV",
-      "packageName": "com.soum91.bridgedeck.tv",
-      "developerName": "soum91",
-      "subtitle": "Discover your TV from BridgeDeck on iPhone",
-      "localizedDescription": "Background TV presence and discovery companion for BridgeDeck iPhone ADB manager. It cannot grant ADB authorization or execute privileged commands by itself.",
-      "category": "utilities",
-      "iconURL": "https://raw.githubusercontent.com/soum91/bridgedeck/main/ios/BridgeDeck/Assets.xcassets/AppIcon.appiconset/AppIcon.png",
-      "repositoryURL": "https://github.com/soum91/bridgedeck",
-      "versions": [
-        {
-          "version": "0.1.0.2",
-          "buildVersion": "2",
-          "versionCode": 2,
-          "date": "2026-11-01",
-          "localizedDescription": "BridgeDeck TV presence companion: native Leanback interface, local-network discovery and status reporting, starts on boot when permitted. ADB functions require separately authorized ADB-over-TCP access.",
-          "changelog": "BridgeDeck TV presence companion: native Leanback interface, local-network discovery and status reporting, starts on boot when permitted. ADB functions require separately authorized ADB-over-TCP access.",
-          "downloadURL": "https://github.com/soum91/embertv/releases/download/bridgedeck-tv-v0.1.0.2/BridgeDeck-TV.apk",
-          "size": 652694,
-          "sha256": "2a994dfa34ec97f2c5ba46edbe91b265cd6c43376235d01eb8a52dcd716f60d1"
-        }
-      ]
-    },
-    {
       "name": "EmberTV",
       "packageName": "com.soum91.embertv",
       "developerName": "soum91",
@@ -91,6 +13,17 @@
       "localizedDescription": "Browse JSON catalogs, install signed APKs, and pair an iPhone companion.",
       "category": "utilities",
       "versions": [
+        {
+          "version": "0.1.0.18",
+          "buildVersion": "18",
+          "date": "2026-11-02",
+          "localizedDescription": "* feat(tv): support authenticated private GitHub release APKs\n* catalog: publish signed Aukkhor TV 0.3.0.5\n* catalog: publish signed BridgeDeck TV 0.1.0.2\n* catalog: publish signed Aukkhor TV 0.3.0.5\n* catalog: publish signed BridgeDeck TV 0.1.0.2\n* catalog: publish signed Aukkhor TV 0.3.0.5\n* catalog: publish signed BridgeDeck TV 0.1.0.2\n* catalog: publish signed Aukkhor TV 0.3.0.5\n* catalog: publish signed BridgeDeck TV 0.1.0.2\n* catalog: publish signed Aukkhor TV 0.3.0.5\n* catalog: publish signed BridgeDeck TV 0.1.0.2\n* catalog: publish signed Aukkhor TV 0.3.0.5\n* release(aukkhor-tv): sync newly fixed D-pad pairing layout into signed EmberTV feed\n* catalog: publish signed Aukkhor TV 0.3.0.4\n* catalog: publish signed BridgeDeck TV 0.1.0.2\n* ci: build permanently signed BridgeDeck TV and auto-sync EmberTV catalog\n* catalog: add signed BridgeDeck TV APK feed updater\n* catalog: publish EmberTV 0.1.0.17",
+          "changelog": "* feat(tv): support authenticated private GitHub release APKs\n* catalog: publish signed Aukkhor TV 0.3.0.5\n* catalog: publish signed BridgeDeck TV 0.1.0.2\n* catalog: publish signed Aukkhor TV 0.3.0.5\n* catalog: publish signed BridgeDeck TV 0.1.0.2\n* catalog: publish signed Aukkhor TV 0.3.0.5\n* catalog: publish signed BridgeDeck TV 0.1.0.2\n* catalog: publish signed Aukkhor TV 0.3.0.5\n* catalog: publish signed BridgeDeck TV 0.1.0.2\n* catalog: publish signed Aukkhor TV 0.3.0.5\n* catalog: publish signed BridgeDeck TV 0.1.0.2\n* catalog: publish signed Aukkhor TV 0.3.0.5\n* release(aukkhor-tv): sync newly fixed D-pad pairing layout into signed EmberTV feed\n* catalog: publish signed Aukkhor TV 0.3.0.4\n* catalog: publish signed BridgeDeck TV 0.1.0.2\n* ci: build permanently signed BridgeDeck TV and auto-sync EmberTV catalog\n* catalog: add signed BridgeDeck TV APK feed updater\n* catalog: publish EmberTV 0.1.0.17",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/tv-v0.1.0.18/EmberTV.apk",
+          "size": 117844,
+          "versionCode": 18,
+          "sha256": "829014ea223232135db3241fc4c89a09226c29f2d8a608790a794fb5f6d74d35"
+        },
         {
           "version": "0.1.0.17",
           "buildVersion": "17",
@@ -214,6 +147,84 @@
         }
       ],
       "iconURL": "https://raw.githubusercontent.com/soum91/embertv/main/assets/embertv-flame-tv-icon.png"
+    },
+    {
+      "name": "Aukkhor TV Keyboard",
+      "packageName": "dev.soum91.aukkhor.tv",
+      "developerName": "soum91",
+      "subtitle": "Type on iPhone when a TV text field opens",
+      "localizedDescription": "Native Android TV D-pad keyboard and paired iPhone remote typing. English and Bangla, secure local-network pairing.",
+      "category": "utilities",
+      "iconURL": "https://raw.githubusercontent.com/soum91/aukkhor/main/ios/Assets.xcassets/AppIcon.appiconset/AukkhorIcon.png",
+      "versions": [
+        {
+          "version": "0.3.0.5",
+          "buildVersion": "5",
+          "versionCode": 5,
+          "date": "2026-11-01",
+          "localizedDescription": "Aukkhor TV keyboard: D-pad typing, English/phonetic Bangla/direct Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection, approved fused A/অ app icon.",
+          "changelog": "Aukkhor TV keyboard: D-pad typing, English/phonetic Bangla/direct Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection, approved fused A/অ app icon.",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/aukkhor-tv-v0.3.0.5/Aukkhor-TV.apk",
+          "size": 41661,
+          "sha256": "39ccadeb069cf905f21d16a90c0696c407d241b742d0caae47bb183f8c380487"
+        },
+        {
+          "version": "0.3.0.4",
+          "buildVersion": "4",
+          "versionCode": 4,
+          "date": "2026-10-31",
+          "localizedDescription": "Aukkhor TV keyboard: D-pad typing, English/phonetic Bangla/direct Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection, approved fused A/অ app icon.",
+          "changelog": "Aukkhor TV keyboard: D-pad typing, English/phonetic Bangla/direct Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection, approved fused A/অ app icon.",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/aukkhor-tv-v0.3.0.4/Aukkhor-TV.apk",
+          "size": 41661,
+          "sha256": "15842f54cc9b4d14dd839d14569d2ca9484fc12308a99ad9afb0d20dfbf1c869"
+        },
+        {
+          "version": "0.3.0.3",
+          "buildVersion": "3",
+          "versionCode": 3,
+          "date": "2026-10-30",
+          "localizedDescription": "Aukkhor TV keyboard: D-pad typing, English/phonetic Bangla/direct Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection.",
+          "changelog": "Aukkhor TV keyboard: D-pad typing, English/phonetic Bangla/direct Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection.",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/aukkhor-tv-v0.3.0.3/Aukkhor-TV.apk",
+          "size": 37565,
+          "sha256": "f67e152f7e691ab87857d893456bebb09995c46786c340557954a611201e8974"
+        },
+        {
+          "version": "0.3.0.2",
+          "buildVersion": "2",
+          "versionCode": 2,
+          "date": "2026-10-30",
+          "localizedDescription": "Aukkhor TV keyboard: D-pad typing, English/Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection.",
+          "changelog": "Aukkhor TV keyboard: D-pad typing, English/Bangla layouts, secure paired iPhone keyboard prompt while Aukkhor is open, focused-field text insertion, password-field protection.",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/aukkhor-tv-v0.3.0.2/Aukkhor-TV.apk",
+          "size": 33469,
+          "sha256": "7add64e4b3ed51163e7e7c57ab2bd3387ebb145d332e08e2c5513c33dd000ee5"
+        }
+      ]
+    },
+    {
+      "name": "BridgeDeck TV",
+      "packageName": "com.soum91.bridgedeck.tv",
+      "developerName": "soum91",
+      "subtitle": "Discover your TV from BridgeDeck on iPhone",
+      "localizedDescription": "Background TV presence and discovery companion for BridgeDeck iPhone ADB manager. It cannot grant ADB authorization or execute privileged commands by itself.",
+      "category": "utilities",
+      "iconURL": "https://raw.githubusercontent.com/soum91/bridgedeck/main/ios/BridgeDeck/Assets.xcassets/AppIcon.appiconset/AppIcon.png",
+      "repositoryURL": "https://github.com/soum91/bridgedeck",
+      "versions": [
+        {
+          "version": "0.1.0.2",
+          "buildVersion": "2",
+          "versionCode": 2,
+          "date": "2026-11-01",
+          "localizedDescription": "BridgeDeck TV presence companion: native Leanback interface, local-network discovery and status reporting, starts on boot when permitted. ADB functions require separately authorized ADB-over-TCP access.",
+          "changelog": "BridgeDeck TV presence companion: native Leanback interface, local-network discovery and status reporting, starts on boot when permitted. ADB functions require separately authorized ADB-over-TCP access.",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/bridgedeck-tv-v0.1.0.2/BridgeDeck-TV.apk",
+          "size": 652694,
+          "sha256": "2a994dfa34ec97f2c5ba46edbe91b265cd6c43376235d01eb8a52dcd716f60d1"
+        }
+      ]
     },
     {
       "name": "Drift",
