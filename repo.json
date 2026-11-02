@@ -381,6 +381,31 @@
           "sha256": "8620a8037b20fca056fc7b41f5fa71e9cc63a63941c890edc04b68ae00a5fcf0"
         }
       ]
+    },
+    {
+      "name": "WARP TV",
+      "packageName": "com.soum91.warptv",
+      "developerName": "soum91",
+      "subtitle": "Remote-friendly WARP VPN for Sony and Android TV",
+      "localizedDescription": "Private signed ARM32 adaptation of the Cloudflare 1.1.1.1 WARP app for Sony Android TV. Adds a landscape dashboard, remote D-pad/OK switch activation, TV launcher, and registration recovery. VPN connection still requires Android approval and device testing.",
+      "category": "utilities",
+      "repositoryURL": "https://github.com/soum91/warp-tv-private-builds",
+      "versions": [
+        {
+          "version": "6.38.11-tv.4",
+          "buildVersion": "5703004",
+          "versionCode": 5703004,
+          "date": "2026-11-01",
+          "localizedDescription": "Private owner-maintained WARP TV 6.38.11-tv.4 ARM32 build. Remote OK connection callback fix, TV dashboard and registration recovery. Signer and SHA-256 verified. Access requires a fine-grained GitHub token with Contents: Read-only for the private release repo.",
+          "changelog": "Remote OK callback dispatch fixed; landscape TV dashboard, Sony remote controls, TV launcher and registration recovery. Private GitHub Release download through authenticated EmberTV.",
+          "githubReleaseAsset": {
+            "repository": "soum91/warp-tv-private-builds",
+            "assetId": 700360707
+          },
+          "size": 35299633,
+          "sha256": "3a532d553bf5c0839e4244c36a7ac959d7abdfdccf7463b4570cfe453c6cc52e"
+        }
+      ]
     }
   ],
   "iconURL": "https://raw.githubusercontent.com/soum91/embertv/main/assets/embertv-flame-tv-icon.png"
