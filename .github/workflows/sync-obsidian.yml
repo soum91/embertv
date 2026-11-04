@@ -1,4 +1,5 @@
 name: Build signed Obsidian TV Companion and sync EmberTV
+# Rebuild from latest Phosphor TVCompanion source and publish signed APK.
 
 on:
   workflow_dispatch:
