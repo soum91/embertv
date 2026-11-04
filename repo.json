@@ -16,6 +16,17 @@
       "repositoryURL": "https://github.com/soum91/phosphor",
       "versions": [
         {
+          "version": "0.1.0.12",
+          "buildVersion": "12",
+          "versionCode": 12,
+          "date": "2026-11-04",
+          "localizedDescription": "Obsidian TV Companion beta. Pair your Sony or Android TV to the Obsidian iPhone Live tab by scanning the QR code on your TV. On the TV, tap Start Live View and approve Android's screen-capture prompt. Encrypted local preview and experimental remote controls; screen capture does not include DRM-protected content or external HDMI sources.",
+          "changelog": "Obsidian TV Companion beta. Pair your Sony or Android TV to the Obsidian iPhone Live tab by scanning the QR code on your TV. On the TV, tap Start Live View and approve Android's screen-capture prompt. Encrypted local preview and experimental remote controls; screen capture does not include DRM-protected content or external HDMI sources.",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/obsidian-tv-v0.1.0.12/Obsidian-TV-Companion.apk",
+          "size": 350978,
+          "sha256": "5fa48a500ddb02fe29545274635d34d496702ec59de15856e9ae1482b9954d63"
+        },
+        {
           "version": "0.1.0.4",
           "buildVersion": "4",
           "versionCode": 4,
@@ -27,12 +38,12 @@
           "sha256": "7d942f851972baaeab95c193565bfd74b555cbb538690d2ce9fa4ce8dd5330f5"
         }
       ],
-      "version": "0.1.0.4",
-      "buildVersion": "4",
-      "versionCode": 4,
-      "downloadURL": "https://github.com/soum91/embertv/releases/download/obsidian-tv-v0.1.0.4/Obsidian-TV-Companion.apk",
-      "size": 346714,
-      "sha256": "7d942f851972baaeab95c193565bfd74b555cbb538690d2ce9fa4ce8dd5330f5",
+      "version": "0.1.0.12",
+      "buildVersion": "12",
+      "versionCode": 12,
+      "downloadURL": "https://github.com/soum91/embertv/releases/download/obsidian-tv-v0.1.0.12/Obsidian-TV-Companion.apk",
+      "size": 350978,
+      "sha256": "5fa48a500ddb02fe29545274635d34d496702ec59de15856e9ae1482b9954d63",
       "versionDate": "2026-11-04",
       "versionDescription": "Obsidian TV Companion beta. Pair your Sony or Android TV to the Obsidian iPhone Live tab by scanning the QR code on your TV. On the TV, tap Start Live View and approve Android's screen-capture prompt. Encrypted local preview and experimental remote controls; screen capture does not include DRM-protected content or external HDMI sources."
     },
