@@ -17,8 +17,9 @@ DESCRIPTION = (
     "Obsidian TV Companion beta. Pair your Sony or Android TV to the Obsidian "
     "iPhone Live tab by scanning the QR code on your TV. On the TV, tap Start "
     "Live View and approve Android's screen-capture prompt. Encrypted local "
-    "preview and experimental remote controls; screen capture does not include "
-    "DRM-protected content or external HDMI sources."
+    "preview with faster refresh, touch and swipe control, plus D-pad and remote "
+    "navigation after enabling Obsidian Accessibility. On Android TV 12, approve "
+    "the initial screen-capture session on the TV. DRM and HDMI sources remain blocked."
 )
 
 
