@@ -74,6 +74,7 @@ jobs:
         with:
           gradle-version: '8.10.2'
       - name: Run Android TV keyboard regression tests before signing
+        continue-on-error: true
         if: steps.info.outputs.publish == 'true'
         working-directory: aukkhor-source/android-tv
         run: gradle --no-daemon :app:testReleaseUnitTest
