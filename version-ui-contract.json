@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "targets": [
+    {
+      "name": "Android TV app",
+      "evidence": [
+        {
+          "path": "tv/app/src/main/java/com/soum91/embertv/MainActivity.java",
+          "contains": [
+            "Installed version",
+            "getPackageInfo",
+            "versionName"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "iPhone companion",
+      "evidence": [
+        {
+          "path": "companion/Sources/ContentView.swift",
+          "contains": [
+            "Installed version",
+            "CFBundleShortVersionString",
+            "CFBundleVersion"
+          ]
+        }
+      ]
+    }
+  ]
+}
