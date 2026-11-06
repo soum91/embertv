@@ -18,7 +18,7 @@
           "version": "0.3.0.6",
           "buildVersion": "6",
           "versionCode": 6,
-          "date": "2026-11-05",
+          "date": "2026-11-06",
           "localizedDescription": "Aukkhor TV keyboard: responsive D-pad navigation, hold-to-delete, action-aware Enter, English/phonetic Bangla/direct Bangla consonant and vowel layouts, optional number row, authenticated iPhone typing, password-field protection, approved fused A/অ app icon.",
           "changelog": "Aukkhor TV keyboard: responsive D-pad navigation, hold-to-delete, action-aware Enter, English/phonetic Bangla/direct Bangla consonant and vowel layouts, optional number row, authenticated iPhone typing, password-field protection, approved fused A/অ app icon.",
           "downloadURL": "https://github.com/soum91/embertv/releases/download/aukkhor-tv-v0.3.0.6/Aukkhor-TV.apk",
@@ -76,7 +76,7 @@
       "downloadURL": "https://github.com/soum91/embertv/releases/download/aukkhor-tv-v0.3.0.6/Aukkhor-TV.apk",
       "size": 45757,
       "sha256": "62671dce0a3d706b21a2cb3a1d7e4ee3ff149a92c77cd5ca41f284033734422d",
-      "versionDate": "2026-11-05",
+      "versionDate": "2026-11-06",
       "versionDescription": "Aukkhor TV keyboard: responsive D-pad navigation, hold-to-delete, action-aware Enter, English/phonetic Bangla/direct Bangla consonant and vowel layouts, optional number row, authenticated iPhone typing, password-field protection, approved fused A/অ app icon."
     },
     {
