@@ -14,6 +14,17 @@
       "category": "utilities",
       "versions": [
         {
+          "version": "0.1.0.20",
+          "buildVersion": "20",
+          "date": "2026-11-06",
+          "localizedDescription": "* Enforce visible installed version/build across app releases\n* catalog: publish Companion 0.1.0.14\n* catalog: publish EmberTV 0.1.0.19",
+          "changelog": "* Enforce visible installed version/build across app releases\n* catalog: publish Companion 0.1.0.14\n* catalog: publish EmberTV 0.1.0.19",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/tv-v0.1.0.20/EmberTV.apk",
+          "size": 118028,
+          "versionCode": 20,
+          "sha256": "75bf9329a56b83f5478febc9b5ad0780685e611c021a9b9e8a1566c81a31914b"
+        },
+        {
           "version": "0.1.0.19",
           "buildVersion": "19",
           "date": "2026-11-06",
