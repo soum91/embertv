@@ -216,6 +216,9 @@ struct ContentView: View {
                     ForEach(model.sources, id: \.self) { source in Text(source).font(.footnote).textSelection(.enabled) }
                         .onDelete { index in index.map { model.sources[$0] }.forEach { model.removeSource($0) } }
                 }
+                Section("About") {
+                    LabeledContent("Installed version", value: "\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown") (build \(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "Unknown"))")
+                }
                 statusRow
             }
             .scrollDismissesKeyboard(.interactively)
