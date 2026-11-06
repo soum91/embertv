@@ -594,7 +594,13 @@ public final class MainActivity extends Activity {
         });
     }
     private void showAbout() {
-        paragraph("EmberTV 0.1 • GitHub APK catalog and installer");
+        try {
+            PackageInfo installed = getPackageManager().getPackageInfo(getPackageName(), 0);
+            paragraph("Installed version: " + installed.versionName + " (build " + installed.getLongVersionCode() + ")");
+        } catch (PackageManager.NameNotFoundException e) {
+            paragraph("Installed version: Unknown");
+        }
+        paragraph("EmberTV • GitHub APK catalog and installer");
         paragraph("Package and signing-certificate checks protect installed app data. All APKs are delivered to Android's official installer.");
         paragraph("APK signature private keys cannot be extracted from installed apps or public GitHub releases. Publishers must keep signing keys consistent.");
         paragraph("iPhone pairing uses local-network HTTP. Only pair on your trusted Wi-Fi. Never forward port " + CompanionServer.PORT + " to the internet.");
