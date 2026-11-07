@@ -1,5 +1,47 @@
 # Changelog
 
+## [android-v0.1.1.34] - 2026-11-07
+
+## Verified changes since android-v0.1.1.28
+
+- catalog: publish signed Obsidian TV Companion 0.1.0.13 ([`1dbdeaad`](https://github.com/soum91/embertv/commit/1dbdeaadfcda1d72d446a53e7b5f1a4dec17f4ca); `repo.json`)
+- catalog: publish signed Aukkhor TV 0.3.0.7 ([`90bd3c76`](https://github.com/soum91/embertv/commit/90bd3c761bcb7d8a54e96c430af8fc24d85739e1); `repo.json`)
+- catalog: publish Companion 0.1.0.15 ([`0dab93c9`](https://github.com/soum91/embertv/commit/0dab93c9a488a93089c79ccea486233202bd6b11); `source.json`)
+- catalog: publish EmberTV 0.1.0.20 ([`f601f9a4`](https://github.com/soum91/embertv/commit/f601f9a4020794a89fafcd3bae0d662a2f511cdc); `repo.json`)
+- Enforce visible installed version/build across app releases ([`e935a49d`](https://github.com/soum91/embertv/commit/e935a49d1fafae4d2074471ee9d7ed65a569624d); `.github/workflows/android.yml`, `.github/workflows/companion.yml`, `.github/workflows/version-ui.yml`, and 2 more)
+- catalog: publish Companion 0.1.0.14 ([`31399c0d`](https://github.com/soum91/embertv/commit/31399c0d3d9850d1b0cf4eac7c0b5a2d2f4ae97d); `source.json`)
+- catalog: publish EmberTV 0.1.0.19 ([`2c803551`](https://github.com/soum91/embertv/commit/2c8035515cd63d066d1ffd201ab8790fc2730c77); `repo.json`)
+- Show actual installed app version and build in UI ([`4810ec6b`](https://github.com/soum91/embertv/commit/4810ec6b9de273dcf8685d3039ce51667067413b); `tv/app/src/main/java/com/soum91/embertv/MainActivity.java`)
+- Show actual installed app version and build in UI ([`ea739e40`](https://github.com/soum91/embertv/commit/ea739e40bb9da75d13943c8f536fb53155370268); `companion/Sources/ContentView.swift`)
+- catalog: publish signed Aukkhor TV 0.3.0.6 ([`9da53a0c`](https://github.com/soum91/embertv/commit/9da53a0c6fc519de4f6a593016ae08af4fc6fb67); `repo.json`)
+- catalog: publish signed BridgeDeck TV 0.1.0.2 ([`12ab9146`](https://github.com/soum91/embertv/commit/12ab914642176fb41cf4f539aa73552c294fda4d); `repo.json`)
+- catalog: publish signed Obsidian TV Companion 0.1.0.12 ([`2f47e4fa`](https://github.com/soum91/embertv/commit/2f47e4fa8efce3a3a29a7031b3b57bcc20a9162f); `repo.json`)
+- catalog: publish signed Aukkhor TV 0.3.0.6 ([`9b918ea9`](https://github.com/soum91/embertv/commit/9b918ea9a3ef2d0d447d86cb198e6c18151b1d79); `repo.json`)
+- catalog: publish signed BridgeDeck TV 0.1.0.2 ([`828baa82`](https://github.com/soum91/embertv/commit/828baa82f2f34d4f40eec2f4d4d4dc0689603f41); `repo.json`)
+- catalog: publish signed Obsidian TV Companion 0.1.0.12 ([`3bb45ae7`](https://github.com/soum91/embertv/commit/3bb45ae7e9efc846d17633e6402a1d40b0c41ef4); `repo.json`)
+- catalog: publish signed Aukkhor TV 0.3.0.6 ([`b072d5f8`](https://github.com/soum91/embertv/commit/b072d5f82fcdebb3078eeeca188f6cc028219f79); `repo.json`)
+- catalog: publish signed Aukkhor TV 0.3.0.6 ([`2f0a5691`](https://github.com/soum91/embertv/commit/2f0a56913af2149a1912f7e586b090ab29b0caf0); `repo.json`)
+- catalog: publish signed BridgeDeck TV 0.1.0.2 ([`fffd23c6`](https://github.com/soum91/embertv/commit/fffd23c676b02fe8b788c044ac6372848f21f5c5); `repo.json`)
+- catalog: publish signed Obsidian TV Companion 0.1.0.12 ([`f9753cf8`](https://github.com/soum91/embertv/commit/f9753cf8cec05055b57930acabc0fd24f0ff32f6); `repo.json`)
+- catalog: publish signed Aukkhor TV 0.3.0.6 ([`ef38a510`](https://github.com/soum91/embertv/commit/ef38a510375ea79de5337dd7f99310fbe4583315); `repo.json`)
+- catalog: publish signed BridgeDeck TV 0.1.0.2 ([`a3db5fd8`](https://github.com/soum91/embertv/commit/a3db5fd83c9fbc711ecb600c539f946423177cd1); `repo.json`)
+- catalog: publish signed Obsidian TV Companion 0.1.0.12 ([`484d661e`](https://github.com/soum91/embertv/commit/484d661e131fad22911ed3f11eb278edcffbe5b4); `repo.json`)
+- catalog: publish signed Aukkhor TV 0.3.0.6 ([`2e4b65aa`](https://github.com/soum91/embertv/commit/2e4b65aabd777d25eccb12d413c87b1817ee21b5); `repo.json`)
+- catalog: publish signed Obsidian TV Companion 0.1.0.12 ([`e240f814`](https://github.com/soum91/embertv/commit/e240f814461f763c72f48eb148d02a7fa698ba83); `repo.json`)
+- catalog: publish signed Aukkhor TV 0.3.0.6 ([`057192f4`](https://github.com/soum91/embertv/commit/057192f47397bc3fe91a5cfca2828f3fb6c191d4); `repo.json`)
+- catalog: publish signed BridgeDeck TV 0.1.0.2 ([`3745746e`](https://github.com/soum91/embertv/commit/3745746e2f32633740b3320b023d407acf51abdf); `repo.json`)
+- catalog: publish signed Obsidian TV Companion 0.1.0.12 ([`afa38285`](https://github.com/soum91/embertv/commit/afa382850fb48ddbd6758c8214d2c8e3483b8585); `repo.json`)
+- Rebuild signed Obsidian TV companion with fixed Android 12 Accessibility and touch support ([`ef6650c7`](https://github.com/soum91/embertv/commit/ef6650c778ccd1f2a2083967893753f550b9410a); `scripts/sync_obsidian_android.py`)
+- Publish updated Obsidian TV Companion with touch controls and Accessibility repair ([`a4521c42`](https://github.com/soum91/embertv/commit/a4521c428d6eca425c40fe81edae21eabeb67cd7); `.github/workflows/sync-obsidian.yml`)
+- catalog: publish signed Obsidian TV Companion 0.1.0.4 ([`d4608ec5`](https://github.com/soum91/embertv/commit/d4608ec5740200c9f9c3c59b1eb3d8afee54f48d); `repo.json`)
+- Build, permanently sign, release, and list Obsidian TV Companion in EmberTV ([`9ed2aaa3`](https://github.com/soum91/embertv/commit/9ed2aaa3d160d7e4beb81a090e7f1fb398a1dd9a); `.github/workflows/sync-obsidian.yml`)
+- Add verified Obsidian TV Companion catalog sync ([`cce60818`](https://github.com/soum91/embertv/commit/cce608188925e8c4b3dfaaf318cfbe21dde32913); `scripts/sync_obsidian_android.py`)
+- catalog: publish signed Aukkhor TV 0.3.0.6 ([`f25d2d47`](https://github.com/soum91/embertv/commit/f25d2d47dd844acc239f6fafe6d7b0f54fa439c2); `repo.json`)
+- catalog: publish signed BridgeDeck TV 0.1.0.2 ([`58cbe3c4`](https://github.com/soum91/embertv/commit/58cbe3c47883ce1d75eabec3b7f688fe708ddb25); `repo.json`)
+- catalog: sync signed Drift Android TV release ([`79c0d738`](https://github.com/soum91/embertv/commit/79c0d73875407d8e4b6d4cfb901e48ddc0037c1f); `repo.json`)
+
+[Inspect exact code changes](https://github.com/soum91/embertv/compare/android-v0.1.1.28...android-v0.1.1.34)
+
 ## [aukkhor-tv-v0.3.0.7] - 2026-11-07
 
 ## Verified changes since aukkhor-tv-v0.3.0.6
