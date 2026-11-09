@@ -1,5 +1,16 @@
 # Changelog
 
+## [android-v0.1.1.43] - 2026-11-09
+
+## Verified changes since android-v0.1.1.41
+
+- catalog: publish signed Obsidian TV Companion 0.1.0.13 ([`89653807`](https://github.com/soum91/embertv/commit/896538073377507e0fd8e36ad3d9d8fa76862591); `repo.json`)
+- catalog: publish signed Aukkhor TV 0.3.0.7 ([`64192c07`](https://github.com/soum91/embertv/commit/64192c073950646d97dbfa95f133f2e40d80b231); `repo.json`)
+- catalog: publish signed BridgeDeck TV 0.1.0.3 ([`5522b4ee`](https://github.com/soum91/embertv/commit/5522b4eea2c70e539d7c67abff11a3bf2d755f24); `repo.json`)
+- catalog: sync signed Drift Android TV release ([`384aa2cd`](https://github.com/soum91/embertv/commit/384aa2cd8666e41609aac3667404a00eeea44198); `repo.json`)
+
+[Inspect exact code changes](https://github.com/soum91/embertv/compare/android-v0.1.1.41...android-v0.1.1.43)
+
 ## [android-v0.1.1.41] - 2026-11-09
 
 ## Verified changes since android-v0.1.1.39
