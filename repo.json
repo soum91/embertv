@@ -352,6 +352,17 @@
       "repositoryURL": "https://github.com/soum91/drift",
       "versions": [
         {
+          "version": "0.1.1.44",
+          "versionCode": 44,
+          "buildVersion": "44",
+          "date": "2026-11-10",
+          "localizedDescription": "Signed Drift Android TV file receiver. Supports iPhone/Windows companion transfers on trusted local Wi-Fi, Wi-Fi Direct and compatible Bluetooth LE. Native AirDrop is not implemented.",
+          "changelog": "Signed Drift Android TV file receiver. Supports iPhone/Windows companion transfers on trusted local Wi-Fi, Wi-Fi Direct and compatible Bluetooth LE. Native AirDrop is not implemented.",
+          "downloadURL": "https://github.com/soum91/embertv/releases/download/android-v0.1.1.44/Drift-AndroidTV.apk",
+          "size": 283326,
+          "sha256": "305748f888b98ad0960aeea5cc2a2fa30fe9bbcbbbac641da41be3e0d3b21d1c"
+        },
+        {
           "version": "0.1.1.43",
           "versionCode": 43,
           "buildVersion": "43",
